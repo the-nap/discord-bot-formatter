@@ -1,7 +1,10 @@
-const fs = require('node:fs');
-const path = require('node:path');
-const { Client, Events, GatewayIntentBits, messageFlags, MessageFlags } = require('discord.js');
-const { token }= require('./config.json');
+import fs from 'node:fs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import path from 'node:path';
+import { Client, Events, GatewayIntentBits, MessageFlags, Collection } from 'discord.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -19,7 +22,8 @@ for ( const folder of commandFolders ) {
   const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
   for ( const file of commandFiles ) {
     const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
+    const commandModule = await import(pathToFileURL(filePath).href);
+    const command = commandModule.default; // ESM export
     if ( 'data' in command && 'execute' in command ) {
       client.commands.set(command.data.name, command);
     } else {
