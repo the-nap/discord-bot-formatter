@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { Client, Events, GatewayIntentBits, MessageFlags, Collection } from 'discord.js';
+import config from './config.json' with { type: "json" };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,3 +60,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
   }
 });
+
+client.login(config.token);

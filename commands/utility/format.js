@@ -9,23 +9,20 @@ export default {
 
   async execute(interaction) {
     const link = interaction.options.getString('link',true);
-    await interaction.reply(formatLink(link));
+    const result = await formatLink(link);
+    interaction.reply(result);
   }
 };
 
 
 async function formatLink(link){
   const client = createAPIClient();
-  const words = link.split(/\W+/);
 
-  const articleId = ((words) => {
-    for (let i = 0; i < words.length; i++){
-    if(words[i] === 'article')
-      return words[i++];
-    }
-  });
+  const url = new URL(link);
+  const parts = url.pathname.split('/').filter(Boolean);
+  const articleId = parts[parts.indexOf('article')+1];
 
-  const article = await client.article.getArticleLiteById(articleId);
+  const article = await client.article.getArticleLiteById({ articleId: articleId });
 
   return article.title;
 }
