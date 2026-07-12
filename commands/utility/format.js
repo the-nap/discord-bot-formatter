@@ -1,5 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { createAPIClient } from '@wareraprojects/api';
+import getArticleData from '../../linkType/article';
+import getUserData from '../../linkType/user';
 
 export default {
   data: new SlashCommandBuilder()
@@ -20,9 +22,14 @@ async function formatLink(link){
 
   const url = new URL(link);
   const parts = url.pathname.split('/').filter(Boolean);
-  const articleId = parts[parts.indexOf('article')+1];
+  const data = parts[1];
+  switch (parts[0]){
+    case 'article':
+      return getArticleData(data);
+    case 'user':
+      return getUserData(data);
+    case 'battle'
+      return getBattleData(data);
+      
 
-  const article = await client.article.getArticleLiteById({ articleId: articleId });
-
-  return article.title;
 }
