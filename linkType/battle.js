@@ -15,6 +15,8 @@ export default async function getBattleData(link, id){
   const svg = await renderBattleMap(region.position);
   const url = await upload(svg);
 
+  console.log(url);
+
   const round = () => {
     if ( !battle.isActive )
       return 'La battaglia è terminata';
@@ -26,7 +28,7 @@ export default async function getBattleData(link, id){
   .setURL(link)
   .addFields(
     { name: '', value: ` ${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${attacker.name}` },
-    { name: '', value: `round()` }
+    { name: '', value: `${round()}` }
   )
   .setImage(url)
 
