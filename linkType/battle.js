@@ -1,6 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
-import { EmbedBuilder, AttachmentBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { renderBattleMap } from "../util/renderBattleMap.js";
+import { upload } from "../util/imgbbUploader.js";
 
 export default async function getBattleData(link, id){
   const client = createAPIClient();
@@ -9,13 +10,13 @@ export default async function getBattleData(link, id){
   const region = await client.region.getById({ regionId: battle.defender.region });
 
   const svg = await renderBattleMap(region.position);
-  const attachment = new AttachmentBuilder(Buffer.from(svg), { name: 'battle-map.svg' });
+  const url = await upload(svg);
 
   const embed = new EmbedBuilder()
   .setTitle(region.name)
   .setURL(link)
-  .setImage('attachment://battle-map.svg')
+  .setImage(url)
 
-  return [`Battle for ${region.name}`, embed, attachment]
+  return [`Battle for ${region.name}`, embed]
 
 }
