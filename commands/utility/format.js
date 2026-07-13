@@ -1,7 +1,8 @@
 import { SlashCommandBuilder } from 'discord.js';
-import { createAPIClient } from '@wareraprojects/api';
-import getArticleData from '../../linkType/article';
-import getUserData from '../../linkType/user';
+import getArticleData from '../../linkType/article.js';
+import getUserData from '../../linkType/user.js';
+import getBattleData from '../../linkType/battle.js';
+import getCompanyData from '../../linkType/company.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -12,24 +13,27 @@ export default {
   async execute(interaction) {
     const link = interaction.options.getString('link',true);
     const result = await formatLink(link);
-    interaction.reply(result);
+    interaction.reply({
+      content: result[0],
+      embeds: [result[1]]
+    });
   }
 };
 
 
 async function formatLink(link){
-  const client = createAPIClient();
 
   const url = new URL(link);
   const parts = url.pathname.split('/').filter(Boolean);
-  const data = parts[1];
+  const id = parts[1];
   switch (parts[0]){
     case 'article':
-      return getArticleData(data);
+      return getArticleData(link,id);
     case 'user':
-      return getUserData(data);
-    case 'battle'
-      return getBattleData(data);
-      
-
+      return getUserData(link,id);
+    case 'battle':
+      return getBattleData(link,id);
+    case 'company':
+      return getCompanyData(link,id);
+  }
 }
