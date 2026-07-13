@@ -2,11 +2,12 @@ import fs from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { Client, Events, GatewayIntentBits, MessageFlags, Collection } from 'discord.js';
-import config from './config.json' with { type: "json" };
+import config from './config-loader.mjs' with { type: "json" };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+console.log("Running in:", config.environment);
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.once(Events.ClientReady, (readyClient) => {

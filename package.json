@@ -4,6 +4,8 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
+    "start:dev": "cross-env NODE_ENV=dev node app.js",
+    "start:prod": "cross-env NODE_ENV=prod node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "the-nap",
@@ -16,5 +18,8 @@
     "imgbb-uploader": "^1.5.1",
     "live-server": "^1.2.0",
     "topojson-client": "^3.1.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
   }
 }
