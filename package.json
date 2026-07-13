@@ -14,6 +14,7 @@
     "d3-geo": "^3.1.1",
     "discord.js": "^14.26.5",
     "imgbb-uploader": "^1.5.1",
+    "live-server": "^1.2.0",
     "topojson-client": "^3.1.0"
   }
 }
