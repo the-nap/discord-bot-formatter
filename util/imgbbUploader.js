@@ -1,4 +1,4 @@
-import config from '../config-loader.mjs' with { type: "json" };
+import config from '../config-loader.mjs';
 import imgbbUploader from "imgbb-uploader"; 
 
 export async function upload(svgString){
