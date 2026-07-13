@@ -13,5 +13,5 @@ export default async function getArticleData(link, id){
   .setThumbnail(author.avatarUrl)
   .setAuthor({ name:`${author.username}`});
 
-  return [`[${article.title}](${link}).Autore: ${author.username}`, embed];
+  return [`[${article.title}](${link}). \n Autore: ${author.username}`, embed];
 }
