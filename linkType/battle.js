@@ -15,12 +15,18 @@ export default async function getBattleData(link, id){
   const svg = await renderBattleMap(region.position);
   const url = await upload(svg);
 
+  const round = () => {
+    if ( !battle.isActive )
+      return 'La battaglia è terminata';
+    return `Round ${battleDetails.battle.roundIds.length} in corso` ;
+  }
+
   const embed = new EmbedBuilder()
   .setTitle(region.name)
   .setURL(link)
   .addFields(
     { name: '', value: ` ${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${attacker.name}` },
-    { name: '', value: `Round ${battleDetails.battle.roundIds.length} in corso` }
+    { name: '', value: `round()` }
   )
   .setImage(url)
 
