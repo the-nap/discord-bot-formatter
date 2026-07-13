@@ -13,10 +13,14 @@ export default {
   async execute(interaction) {
     const link = interaction.options.getString('link',true);
     const result = await formatLink(link);
-    interaction.reply({
-      content: result[0],
-      embeds: [result[1]]
-    });
+    if(!result[1])
+      interaction.reply(result[0]);
+    else {
+      interaction.reply({
+        content: result[0],
+        embeds: [result[1]]
+      });
+    }
   }
 };
 
@@ -29,11 +33,14 @@ async function formatLink(link){
   switch (parts[0]){
     case 'article':
       return getArticleData(link,id);
-    case 'user':
+    //case 'user':
       return getUserData(link,id);
     case 'battle':
       return getBattleData(link,id);
-    case 'company':
+    //case 'company':
       return getCompanyData(link,id);
+    default:
+      return ['Feature not implemented yet',null]
+      
   }
 }
