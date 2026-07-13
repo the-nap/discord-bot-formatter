@@ -1,7 +1,7 @@
 {
   "name": "warera-links-bot",
   "version": "1.0.0",
-  "type":"module",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,6 +11,8 @@
   "description": "",
   "dependencies": {
     "@wareraprojects/api": "^0.3.3",
-    "discord.js": "^14.26.5"
+    "d3-geo": "^3.1.1",
+    "discord.js": "^14.26.5",
+    "topojson-client": "^3.1.0"
   }
 }
