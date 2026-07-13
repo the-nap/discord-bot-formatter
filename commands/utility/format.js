@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import getArticleData from '../../linkType/article.js';
 import getBattleData from '../../linkType/battle.js';
+import getRegionData from '../../linkType/region.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -39,6 +40,8 @@ async function formatLink(link){
       return getArticleData(link,id);
     //case 'user':
  //     return getUserData(link,id);
+    case 'region':
+      return getRegionData(link, id)
     case 'battle':
       return getBattleData(link,id);
     //case 'company':
