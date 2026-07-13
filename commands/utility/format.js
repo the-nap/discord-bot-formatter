@@ -9,22 +9,35 @@ export default {
     .addStringOption((option) => option.setName('link').setDescription('The link to format').setRequired(true)),
 
   async execute(interaction) {
+    const startTime = performance.now();
     await interaction.deferReply();
     try{
       const link = interaction.options.getString('link',true);
       const result = await formatLink(link);
-      if(!result[1])
-        interaction.editReply(result[0]);
-      else {
-        interaction.editReply({
-          content: result[0],
-          embeds: [result[1]]
-        });
+      switch(result.length){
+        case(1):
+          await interaction.editReply(result[0]);
+          break;
+        case(2):
+          await interaction.editReply({
+            content: result[0],
+            embeds: [result[1]]
+          });
+          break;
+        default:
+          await interaction.editReply({
+            content: result[0],
+            embeds: [result[1]],
+            files: [result[2]]
+          });
       }
+
     } catch (err) {
       console.error(err)
       await interaction.editReply("Something went wrong while formatting this link.");
     }
+    const endTime = performance.now();
+    console.log(`Total call took ${endTime - startTime} milliseconds`);
   }
 };
 
