@@ -5,6 +5,9 @@ import { writeFile, readFile } from "node:fs/promises";
 
 const CACHE_PATH = new URL("./cache/map-geo.json", import.meta.url);
 const MAP_CACHE_PATH = new URL("./cache/map-geo-array.json", import.meta.url);
+
+let regionCentroidsCache = null;
+
 const WIDTH = 500;
 const HEIGHT = 300;
 
@@ -60,11 +63,21 @@ function reviver(key, value) {
   return value;
 }
 
+function createCentroidCache(dataMap){
+  if(!regionCentroidsCache){
+    regionCentroidsCache = new Map();
+    for (const[id, geometry] of dataMap.entries()) {
+      regionCentroidsCache.set(id, geoCentroid(geometry));
+    }
+  }
+}
+
 async function getRegionsData(){
   const geoData = await getMapData();
   if (existsSync(MAP_CACHE_PATH)) {
     const cached = await readFile(MAP_CACHE_PATH, "utf8");
     const dataMap = JSON.parse(cached,reviver);
+    createCentroidCache(dataMap)
     return { dataMap, geoData };
   }
   const dataMap = new Map();
@@ -72,52 +85,22 @@ async function getRegionsData(){
     dataMap.set(entry.id, entry.geometry)
   }
 
+  createCentroidCache(dataMap);
+
   await writeFile(MAP_CACHE_PATH, JSON.stringify(dataMap, replacer), "utf8");
   return { dataMap, geoData };
 }
   
-function getMiddlePoint(geometries){
+function getMiddlePoint(ids){
   let result = [0.0, 0.0]
-  for( const geometry of geometries ){
-    const center = geoCentroid(geometry);
+  for( const id of ids ){
+    const center = regionCentroidsCache.get(id);
     result[0] += center[0];
     result[1] += center[1];
   }
-  result[0] = result[0]/geometries.length;
-  result[1] = result[1]/geometries.length;
+  result[0] = result[0]/ids.length;
+  result[1] = result[1]/ids.length;
   return result;
-}
-
-function centroidMulti(poly) {
-  return poly.coordinates.map(centroid)
-    .reduce((r, pair) => {
-      r[0].push(pair[0]);
-      r[1].push(pair[1]);
-      return r
-    }, [[], []])
-    .map((a) => a.reduce(( p, c) => p + c, 0) / a.length);
-}
-
-function area(poly){
-  var s = 0.0;
-  var ring = poly.coordinates[0];
-  for(i= 0; i < (ring.length-1); i++){
-    s += (ring[i][0] * ring[i+1][1] - ring[i+1][0] * ring[i][1]);
-    }
-  return 0.5 *s;
-}
-
-function centroid(poly){
-  var c = [0,0];
-  var ring = poly.coordinates[0];
-  for(i= 0; i < (ring.length-1); i++){
-    c[0] += (ring[i][0] + ring[i+1][0]) * (ring[i][0]*ring[i+1][1] - ring[i+1][0]*ring[i][1]);
-    c[1] += (ring[i][1] + ring[i+1][1]) * (ring[i][0]*ring[i+1][1] - ring[i+1][0]*ring[i][1]);
-  }
-  var a = area(poly);
-  c[0] /= a *6;
-  c[1] /= a*6;
-  return c;
 }
 
 function paint(allRegions, regionIds, path) {
@@ -141,13 +124,7 @@ function paint(allRegions, regionIds, path) {
 export async function renderBattleMap(regionIds) {
   const { dataMap: allRegions, geoData } = await getRegionsData()
 
-
-  const geometries = new Array();
-  for(const region of regionIds){
-    geometries.push(allRegions.get(region));
-  }
-
-  const middlePoint = getMiddlePoint(geometries);
+  const middlePoint = getMiddlePoint(regionIds);
 
   const projection = geoMercator().fitSize([WIDTH, HEIGHT], geoData );
   const path = geoPath(projection);
