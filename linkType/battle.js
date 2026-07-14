@@ -1,6 +1,6 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { renderBattleMap } from "../util/renderBattleMap.ts";
+import { renderBattleMap } from "../dist/renderBattleMap.js";
 import sharp from "sharp";
 
 export default async function getBattleData(link, id){
