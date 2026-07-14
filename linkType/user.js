@@ -40,7 +40,7 @@ export default async function getUserData(link, id){
   }
 
   const skillSet = () => {
-    if(user.skills.attack.level > 3)
+    if(user.skills.attack.level > 3 && user.skills.precision.level > 3 && user.skills.energy.level < 2 && user. skills.production.level < 3)
       return '⚔️ War';
     return '💰 Eco';
   }
