@@ -8,6 +8,7 @@ const MAP_CACHE_PATH = new URL("./cache/map-geo-array.json", import.meta.url);
 
 let regionCentroidsCache = null;
 let regionPathDCache = null;
+const regionBoundsCache = new Map();
 
 const WIDTH = 500;
 const HEIGHT = 300;
@@ -16,33 +17,43 @@ const MIN_ZOOM = 1.5;
 const MAX_ZOOM = 18;
 const PADDING = 16; // px
 
-function computeFocusTransform(projection, path, allRegions, regionIds) {
-  const selected = regionIds
-    .map((id) => allRegions.get(id))
-    .filter(Boolean)
-    .map((geometry, i) => ({
-      type: "Feature",
-      id: regionIds[i],
-      properties: {},
-      geometry,
-    }));
+const data = await getRegionsData()
+const projection = geoMercator().fitSize([WIDTH, HEIGHT], data.geoData);
+const path = geoPath(projection);
 
-  if (!selected.length) {
-    return { zoom: 1, tx: WIDTH / 2, ty: HEIGHT / 2 };
+createPathAndBoundsCache(path, data.dataMap);
+
+let basePaths = [...data.dataMap.keys()]
+  .map( id => `<path d="${regionPathDCache.get(id)}" fill="#1e293b" />`)
+  .join("");
+
+function computeFocusTransform(regionIds) {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  
+  for (const id of regionIds) {
+      const bounds = regionBoundsCache.get(id);
+  
+      if (!bounds) continue;
+  
+      x0 = Math.min(x0, bounds[0][0]);
+      y0 = Math.min(y0, bounds[0][1]);
+  
+      x1 = Math.max(x1, bounds[1][0]);
+      y1 = Math.max(y1, bounds[1][1]);
   }
 
-  const fc = { type: "FeatureCollection", features: selected };
-  const [[x0, y0], [x1, y1]] = path.bounds(fc);
-
-  const boxW = Math.max(1, x1 - x0);
-  const boxH = Math.max(1, y1 - y0);
-
-  const zoomX = (WIDTH - 2 * PADDING) / boxW;
-  const zoomY = (HEIGHT - 2 * PADDING) / boxH;
-  const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(zoomX, zoomY)));
-
-  const cx = (x0 + x1) / 2;
-  const cy = (y0 + y1) / 2;
+    const boxW = Math.max(1, x1 - x0);
+    const boxH = Math.max(1, y1 - y0);
+  
+    const zoomX = (WIDTH - 2 * PADDING) / boxW;
+    const zoomY = (HEIGHT - 2 * PADDING) / boxH;
+    const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(zoomX, zoomY)));
+  
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
 
   return { zoom, cx, cy };
 }
@@ -92,6 +103,7 @@ function reviver(key, value) {
 }
 
 function createCentroidCache(dataMap){
+  console.log(regionCentroidsCache)
   if(!regionCentroidsCache){
     regionCentroidsCache = new Map();
     for (const[id, geometry] of dataMap.entries()) {
@@ -100,12 +112,13 @@ function createCentroidCache(dataMap){
   }
 }
 
-function createPathDCache(path, allRegions){
+function createPathAndBoundsCache(path, allRegions){
   if (!regionPathDCache) {
     regionPathDCache = new Map()
     for (const [id ,geometry] of allRegions.entries()) {
-      const d = path({ type: "Feature", id: id, properties: {}, geometry });
-      regionPathDCache.set(id,d);
+      const feature = ({ type: "Feature", id: id, properties: {}, geometry });
+      regionPathDCache.set(id, path(feature));
+      regionBoundsCache.set(id, path.bounds(feature));
     }
   }
 }
@@ -129,55 +142,20 @@ async function getRegionsData(){
   return { dataMap, geoData };
 }
   
-function getMiddlePoint(ids){
-  let result = [0.0, 0.0]
-  for( const id of ids ){
-    const center = regionCentroidsCache.get(id);
-    result[0] += center[0];
-    result[1] += center[1];
-  }
-  result[0] = result[0]/ids.length;
-  result[1] = result[1]/ids.length;
-  return result;
-}
-
-function paint(allRegions, regionIds) {
+function paint(regionIds) {
   let out = "";
-
-  for (const key of allRegions.keys()) {
-    const d = regionPathDCache.get(key);
-    if (!d) continue;
-
-      let fill;
-      if(regionIds[0] === key){
-        fill = "#ef4444";
-      } else if(regionIds.length > 1 && regionIds[1] === key){
-        fill = "#22c55e";
-      } else {
-        fill = "#1e293b";
-      }
-    out += `<path d="${d}" fill="${fill}" />`;
-  }
-
+  out += `<path d="${regionPathDCache.get(regionIds[0])}" fill="#ef4444" />`;
+  if(regionIds.length > 1)
+    out += `<path d="${regionPathDCache.get(regionIds[1])}" fill="#22c55e" />`;
   return out;
 }
 
-export async function renderBattleMap(regionIds) {
-  const { dataMap: allRegions, geoData } = await getRegionsData()
-
-  const middlePoint = getMiddlePoint(regionIds);
-
-  const projection = geoMercator().fitSize([WIDTH, HEIGHT], geoData );
-  const path = geoPath(projection);
-
-  createPathDCache(path, allRegions);
-
-  const { zoom, cx, cy } = computeFocusTransform(projection, path, allRegions, regionIds);
+export function renderBattleMap(regionIds) {
+  const { zoom, cx, cy } = computeFocusTransform(regionIds);
   const transform = `translate(${WIDTH / 2} ${HEIGHT / 2}) scale(${zoom}) translate(${-cx} ${-cy})`;
    // Keep stroke visually consistent under zoom
   const strokeWidth = (0.6 / zoom).toFixed(4);
 
-  const paths = paint(allRegions, regionIds);
 
   const openSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
   <rect width="100%" height="100%" fill="#0f172a" />`;
@@ -186,7 +164,8 @@ export async function renderBattleMap(regionIds) {
 
   return `${openSvg}
       <g transform="${transform}" stroke="#94a3b8" stroke-width="${strokeWidth}">
-        ${paths}
+        ${basePaths}
+        ${paint(regionIds)}
       </g>
     ${closeSvg}`;
 }
