@@ -19,7 +19,6 @@ export default {
       const link = interaction.options.getString('link',true);
       const opzioni = interaction.options.getString('opzioni');
       const result = await formatLink(link);
-      console.log(opzioni);
       if( result[1] && opzioni)
         result[1].setDescription('**'+opzioni+'**')
       switch(result.length){

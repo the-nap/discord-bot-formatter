@@ -5,7 +5,6 @@ export default async function getUserData(link, id){
   const client = createAPIClient();
 
   const user = await client.user.getUserById({ userId: id });
-  console.log(user.username);
 
   const healthField = () => {
     const current = user.skills.health.currentBarValue.toFixed(1);
