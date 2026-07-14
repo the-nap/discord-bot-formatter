@@ -57,5 +57,5 @@ export default async function getUserData(link, id){
     { name: 'Skill', value: `${skillSet()}` }
   )
 
-  return [`[${user.username}](${link})`, embed];
+  return ['', embed];
 }

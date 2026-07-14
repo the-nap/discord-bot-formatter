@@ -59,7 +59,6 @@ function isValidPoint(point) {
 }
 
 function findContainingRegionIndex(regions, point) {
-  console.log(point);
   if (!isValidPoint(point)) return -1;
 
   for (const { i, feature, bbox } of regions) {
