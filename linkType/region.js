@@ -1,6 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { renderBattleMap } from "../util/renderBattleMap.js";
+import { renderBattleMap } from "../util/renderBattleMap.ts";
+import sharp from "sharp";
 
 export default async function getRegionData(link, id){
   const client = createAPIClient();
@@ -8,7 +9,7 @@ export default async function getRegionData(link, id){
 
   let startTime = performance.now();
 
-  const svg = await renderBattleMap(region.position);
+  const svg = await renderBattleMap([region.position]);
 
   let endTime = performance.now();
   console.log(`Call to render map took ${endTime - startTime} milliseconds`);
@@ -24,7 +25,7 @@ export default async function getRegionData(link, id){
   const embed = new EmbedBuilder()
   .setTitle(region.name)
   .setURL(link)
-  .setImage("attachments://region.png");
+  .setImage("attachment://region.png");
 
   return ['', embed, file]
 

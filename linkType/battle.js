@@ -1,6 +1,6 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { renderBattleMap } from "../util/renderBattleMap.js";
+import { renderBattleMap } from "../util/renderBattleMap.ts";
 import sharp from "sharp";
 
 export default async function getBattleData(link, id){
@@ -8,25 +8,26 @@ export default async function getBattleData(link, id){
 
   const battle = await client.battle.getById({ battleId: id });
   const battleDetails = await client.battle.getLiveBattleData({ battleId: id });
-  const region = await client.region.getById({ regionId: battle.defender.region });
-  const attacker = await client.country.getCountryById({ countryId: battle.attacker.country });
+
   const defender = await client.country.getCountryById({ countryId: battle.defender.country });
+  const defenderRegion = await client.region.getById({ regionId: battle.defender.region });
 
+  const attacker = await client.country.getCountryById({ countryId: battle.attacker.country });
 
-  let startTime = performance.now();
+  let svg;
+  let isRevolt;
 
-  const svg = await renderBattleMap(region.position);
-
-  let endTime = performance.now();
-  console.log(`Call to render map took ${endTime - startTime} milliseconds`);
-
-  startTime = performance.now();
+  if(battle.attacker.region){
+    isRevolt = false;
+    const attackerRegion = await client.region.getById({ regionId: battle.attacker.region });
+    svg = await renderBattleMap([defenderRegion.position, attackerRegion.position]);
+  } else {
+    isRevolt = true;
+    svg = await renderBattleMap([defenderRegion.position]);
+  }
 
   const pngBuffer = await sharp(Buffer.from(svg, "utf8")).png().toBuffer();
   const file = new AttachmentBuilder(pngBuffer, { name: "region.png" });
-
-  endTime = performance.now();
-  console.log(`Call to create attachment took ${endTime - startTime} milliseconds`);
 
   const round = () => {
     if ( !battle.isActive )
@@ -34,11 +35,18 @@ export default async function getBattleData(link, id){
     return `Round ${battleDetails.battle.roundIds.length} in corso` ;
   }
 
+  const points = () => { 
+    if(isRevolt)
+      return ` ${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ✊${attacker.name}` 
+    return `${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${attacker.name}`
+
+  }
+
   const embed = new EmbedBuilder()
-  .setTitle(region.name)
+  .setTitle(defenderRegion.name)
   .setURL(link)
   .addFields(
-    { name: '', value: ` ${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${attacker.name}` },
+    { name: '', value: `${points()}` },
     { name: '', value: `${round()}` }
   )
   .setImage("attachment://region.png");
