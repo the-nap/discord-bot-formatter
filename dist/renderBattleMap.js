@@ -12,13 +12,40 @@ let regionPathDCache = null;
 const WIDTH = 500;
 const HEIGHT = 300;
 
+const MIN_ZOOM = 1.5;
+const MAX_ZOOM = 18;
+const PADDING = 16; // px
 
-// Base map scale at prep time
-const BASE_ZOOM_MULTIPLIER = 1;
-// Per-render focus zoom
-const FOCUS_ZOOM = 10;
-// Process-lifetime cache
-let preparedMapCache = null;
+function computeFocusTransform(projection, path, allRegions, regionIds) {
+  const selected = regionIds
+    .map((id) => allRegions.get(id))
+    .filter(Boolean)
+    .map((geometry, i) => ({
+      type: "Feature",
+      id: regionIds[i],
+      properties: {},
+      geometry,
+    }));
+
+  if (!selected.length) {
+    return { zoom: 1, tx: WIDTH / 2, ty: HEIGHT / 2 };
+  }
+
+  const fc = { type: "FeatureCollection", features: selected };
+  const [[x0, y0], [x1, y1]] = path.bounds(fc);
+
+  const boxW = Math.max(1, x1 - x0);
+  const boxH = Math.max(1, y1 - y0);
+
+  const zoomX = (WIDTH - 2 * PADDING) / boxW;
+  const zoomY = (HEIGHT - 2 * PADDING) / boxH;
+  const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(zoomX, zoomY)));
+
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+
+  return { zoom, cx, cy };
+}
 
 async function getMapData() {
     if (existsSync(CACHE_PATH)) {
@@ -145,11 +172,10 @@ export async function renderBattleMap(regionIds) {
 
   createPathDCache(path, allRegions);
 
-  console.log(middlePoint);
-  const [tx, ty] = projection(middlePoint);
-  const transform = `translate(${WIDTH / 2} ${HEIGHT / 2}) scale(${FOCUS_ZOOM}) translate(${-tx} ${-ty})`;
+  const { zoom, cx, cy } = computeFocusTransform(projection, path, allRegions, regionIds);
+  const transform = `translate(${WIDTH / 2} ${HEIGHT / 2}) scale(${zoom}) translate(${-cx} ${-cy})`;
    // Keep stroke visually consistent under zoom
-  const strokeWidth = (0.6 / FOCUS_ZOOM).toFixed(4);
+  const strokeWidth = (0.6 / zoom).toFixed(4);
 
   const paths = paint(allRegions, regionIds);
 
