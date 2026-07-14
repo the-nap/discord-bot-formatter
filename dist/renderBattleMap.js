@@ -61,18 +61,19 @@ function reviver(key, value) {
 }
 
 async function getRegionsData(){
+  const geoData = await getMapData();
   if (existsSync(MAP_CACHE_PATH)) {
     const cached = await readFile(MAP_CACHE_PATH, "utf8");
-    return JSON.parse(cached,reviver);
+    const dataMap = JSON.parse(cached,reviver);
+    return { dataMap, geoData };
   }
   const dataMap = new Map();
-  const geoData = await getMapData();
   for( const entry of geoData.features ){
     dataMap.set(entry.id, entry.geometry)
   }
 
   await writeFile(MAP_CACHE_PATH, JSON.stringify(dataMap, replacer), "utf8");
-  return dataMap;
+  return { dataMap, geoData };
 }
   
 function getMiddlePoint(geometries){
@@ -138,7 +139,8 @@ function paint(allRegions, regionIds, path) {
 }
 
 export async function renderBattleMap(regionIds) {
-  const allRegions = await getRegionsData()
+  const { dataMap: allRegions, geoData } = await getRegionsData()
+
 
   const geometries = new Array();
   for(const region of regionIds){
@@ -147,7 +149,7 @@ export async function renderBattleMap(regionIds) {
 
   const middlePoint = getMiddlePoint(geometries);
 
-  const projection = geoMercator().fitSize([WIDTH, HEIGHT], await getMapData() );
+  const projection = geoMercator().fitSize([WIDTH, HEIGHT], geoData );
   const path = geoPath(projection);
 
   console.log(middlePoint);
