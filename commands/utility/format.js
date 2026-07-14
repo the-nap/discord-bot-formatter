@@ -5,19 +5,23 @@ import getBattleData from '../../linkType/battle.js';
 import getRegionData from '../../linkType/region.js';
 
 export default {
+  cooldown: 3,
   data: new SlashCommandBuilder()
     .setName('format')
     .setDescription('Formats warera links')
     .addStringOption((option) => option.setName('link').setDescription('The link to format').setRequired(true))
-    .addStringOption((option) => option.setName('ordini').setDescription('Messaggio aggiuntivo').setRequired(false)),
+    .addStringOption((option) => option.setName('opzioni').setDescription('Messaggio aggiuntivo').setRequired(false)),
 
   async execute(interaction) {
     const startTime = performance.now();
     await interaction.deferReply();
     try{
       const link = interaction.options.getString('link',true);
-      const ordini = interaction.options.getString('ordini');
+      const opzioni = interaction.options.getString('opzioni');
       const result = await formatLink(link);
+      console.log(opzioni);
+      if( result[1] && opzioni)
+        result[1].setDescription('**'+opzioni+'**')
       switch(result.length){
         case(1):
           await interaction.editReply(result[0]);
@@ -25,13 +29,13 @@ export default {
         case(2):
           await interaction.editReply({
             content: result[0],
-            embeds: [result[1].setDescription('**'+ordini+'**')]
+            embeds: [result[1]]
           });
           break;
         default:
           await interaction.editReply({
             content: result[0],
-            embeds: [result[1].setDescription('**'+ordini+'**')],
+            embeds: [result[1]],
             files: [result[2]]
           });
       }
