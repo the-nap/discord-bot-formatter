@@ -15,7 +15,7 @@ const BASE_ZOOM_MULTIPLIER = 1;
 const FOCUS_ZOOM = 10;
 
 // Process-lifetime cache
-let preparedMapCache = null;
+let preparedMapCache: any = null;
 
 async function getMapData() {
   if (existsSync(CACHE_PATH)) {
@@ -49,7 +49,7 @@ function pointInBbox([x, y], [[minX, minY], [maxX, maxY]]) {
   return x >= minX && x <= maxX && y >= minY && y <= maxY;
 }
 
-async function prepareMap() {
+async function prepareMap():Promise<any> {
   if (preparedMapCache) return preparedMapCache;
 
   const geo = await getMapData();
@@ -100,27 +100,109 @@ async function prepareMap() {
   return preparedMapCache;
 }
 
-export async function renderBattleMap(position) {
-  const [lon, lat] = position;
+abstract class State {
+  protected midPoint;
 
-  const { projection, regions, openSvg, closeSvg } = await prepareMap();
-  const battlePoint = [lon, lat];
+  constructor(position){
+    this.midPoint = position;
+  }
+  getMidPoint(){
+    return this.midPoint;
+  }
+  abstract findHighlighted(regions);
+  abstract paint(regions, highlightedIndex);
+}
 
-  // 1) Find highlighted region
-  let highlightedIndex = -1;
-  for (const { i, feature, bbox } of regions) {
-    if (!pointInBbox(battlePoint, bbox)) continue;
-    if (geoContains(feature, battlePoint)) {
-      highlightedIndex = i;
-      break;
+class Single extends State {
+
+  constructor(positions){
+    super(positions[0]);
+  }
+
+  findHighlighted(regions) {
+    for (const { i, feature, bbox } of regions) {
+      if (!pointInBbox(this.midPoint, bbox)) continue;
+      if (geoContains(feature, this.midPoint)){
+        return [i];
+      }
     }
   }
 
+  paint(regions, highlightedIndex){
+    const paths = regions
+      .map(({ i, d }) => {
+        if (!d) return "";
+        const fill = i === highlightedIndex[0] ? "#ef4444" : "#1e293b";
+        return `<path d="${d}" fill="${fill}" />`;
+      })
+      .join("");
+      return paths;
+  }
+}
+
+class Double extends State {
+  protected defenderPoint;
+  protected attackerPoint;
+
+  constructor(positions){
+    const [lonDef, latDef] = positions[0];
+    const [lonAtt, latAtt] = positions[1];
+    const position = [(lonDef + lonAtt) / 2, (latDef + latAtt) / 2];
+    super(position);
+    this.defenderPoint = positions[0];
+    this.attackerPoint = positions[1];
+  }
+
+  findHighlighted(regions) {
+    let highlightedIndex = [-1, -1];
+    for (const { i, feature, bbox } of regions) {
+      const defenderMaybeInside = pointInBbox(this.defenderPoint, bbox)
+      const attackerMaybeInside = pointInBbox(this.attackerPoint, bbox)
+
+      if (!defenderMaybeInside && !attackerMaybeInside) continue;
+
+      if (geoContains(feature, this.defenderPoint))
+        highlightedIndex[0] = i;
+
+      if (geoContains(feature, this.attackerPoint))
+        highlightedIndex[1] = i;
+
+      if (highlightedIndex[0] !== -1 && highlightedIndex[1] !== -1)
+        return highlightedIndex;
+    }
+  }
+
+  paint(regions, highlightedIndex){
+    const paths = regions
+      .map(({ i, d }) => {
+        if (!d) return "";
+        const fill = 
+          i === highlightedIndex[0] ? "#ef4444" : 
+          i === highlightedIndex[1] ? "#22c55e":
+          "#1e293b";
+        return `<path d="${d}" fill="${fill}" />`;
+      })
+      .join("");
+      return paths;
+  }
+}
+
+export async function renderBattleMap(positions) {
+  let state: State;
+  if(positions.length > 1){
+    state = new Double(positions);
+  } else {
+    state = new Single(positions);
+  }
+
+  const { projection, regions, openSvg, closeSvg } = await prepareMap();
+  const battlePoint = state.getMidPoint();
+
+  // 1) Find highlighted region
+  const highlightedIndex = state.findHighlighted(regions);
+
   // 2) Determine focus target (region centroid if available, else raw battle point)
   let targetXY = projection(battlePoint) || [WIDTH / 2, HEIGHT / 2];
-  if (highlightedIndex >= 0) {
-    targetXY = regions[highlightedIndex].centroidXY;
-  }
 
   // 3) Apply zoom/pan transform at SVG group level (no path recomputation)
   // Move target to center, zoom around center.
@@ -131,13 +213,7 @@ export async function renderBattleMap(position) {
   const strokeWidth = (0.6 / FOCUS_ZOOM).toFixed(4);
 
   // 4) Paint highlighted region
-  const paths = regions
-    .map(({ i, d }) => {
-      if (!d) return "";
-      const fill = i === highlightedIndex ? "#ef4444" : "#1e293b";
-      return `<path d="${d}" fill="${fill}" />`;
-    })
-    .join("");
+  const paths = state.paint(regions, highlightedIndex);
 
   const svg = `${openSvg}
   <g transform="${transform}" stroke="#94a3b8" stroke-width="${strokeWidth}">
