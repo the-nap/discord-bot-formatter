@@ -7,6 +7,7 @@ const CACHE_PATH = new URL("./cache/map-geo.json", import.meta.url);
 const MAP_CACHE_PATH = new URL("./cache/map-geo-array.json", import.meta.url);
 
 let regionCentroidsCache = null;
+let regionPathDCache = null;
 
 const WIDTH = 500;
 const HEIGHT = 300;
@@ -72,6 +73,16 @@ function createCentroidCache(dataMap){
   }
 }
 
+function createPathDCache(path, allRegions){
+  if (!regionPathDCache) {
+    regionPathDCache = new Map()
+    for (const [id ,geometry] of allRegions.entries()) {
+      const d = path({ type: "Feature", id: id, properties: {}, geometry });
+      regionPathDCache.set(id,d);
+    }
+  }
+}
+
 async function getRegionsData(){
   const geoData = await getMapData();
   if (existsSync(MAP_CACHE_PATH)) {
@@ -103,11 +114,13 @@ function getMiddlePoint(ids){
   return result;
 }
 
-function paint(allRegions, regionIds, path) {
-  return Array.from(allRegions.entries())
-    .map(([key,value]) => {
-      const d = path({ type: "Feature", id: key, properties: {}, geometry: value });
-  
+function paint(allRegions, regionIds) {
+  let out = "";
+
+  for (const key of allRegions.keys()) {
+    const d = regionPathDCache.get(key);
+    if (!d) continue;
+
       let fill;
       if(regionIds[0] === key){
         fill = "#ef4444";
@@ -116,9 +129,10 @@ function paint(allRegions, regionIds, path) {
       } else {
         fill = "#1e293b";
       }
+    out += `<path d="${d}" fill="${fill}" />`;
+  }
 
-      return `<path d="${d}" fill="${fill}" />`;
-    }).join("");
+  return out;
 }
 
 export async function renderBattleMap(regionIds) {
@@ -129,13 +143,15 @@ export async function renderBattleMap(regionIds) {
   const projection = geoMercator().fitSize([WIDTH, HEIGHT], geoData );
   const path = geoPath(projection);
 
+  createPathDCache(path, allRegions);
+
   console.log(middlePoint);
   const [tx, ty] = projection(middlePoint);
   const transform = `translate(${WIDTH / 2} ${HEIGHT / 2}) scale(${FOCUS_ZOOM}) translate(${-tx} ${-ty})`;
    // Keep stroke visually consistent under zoom
   const strokeWidth = (0.6 / FOCUS_ZOOM).toFixed(4);
 
-  const paths = paint(allRegions, regionIds, path);
+  const paths = paint(allRegions, regionIds);
 
   const openSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
   <rect width="100%" height="100%" fill="#0f172a" />`;
