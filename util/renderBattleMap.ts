@@ -59,6 +59,7 @@ function isValidPoint(point) {
 }
 
 function findContainingRegionIndex(regions, point) {
+  console.log(point);
   if (!isValidPoint(point)) return -1;
 
   for (const { i, feature, bbox } of regions) {
@@ -69,17 +70,99 @@ function findContainingRegionIndex(regions, point) {
   return -1;
 }
 
+function pointToSegmentDistanceSq(point, a, b) {
+  const px = point[0];
+  const py = point[1];
+  const ax = a[0];
+  const ay = a[1];
+  const bx = b[0];
+  const by = b[1];
+
+  const abx = bx - ax;
+  const aby = by - ay;
+  const apx = px - ax;
+  const apy = py - ay;
+  const abLenSq = abx * abx + aby * aby;
+
+  // Degenerate segment
+  if (abLenSq === 0) {
+    const dx = px - ax;
+    const dy = py - ay;
+    return dx * dx + dy * dy;
+  }
+
+  // Project AP onto AB, clamp to segment [0,1]
+  const t = Math.max(0, Math.min(1, (apx * abx + apy * aby) / abLenSq));
+  const cx = ax + t * abx;
+  const cy = ay + t * aby;
+
+  const dx = px - cx;
+  const dy = py - cy;
+  return dx * dx + dy * dy;
+}
+
+function ringDistanceSq(point, ring) {
+  if (!Array.isArray(ring) || ring.length < 2) return Number.POSITIVE_INFINITY;
+
+  let minDistance = Number.POSITIVE_INFINITY;
+
+  for (let idx = 0; idx < ring.length - 1; idx++) {
+    const a = ring[idx];
+    const b = ring[idx + 1];
+    if (!isValidPoint(a) || !isValidPoint(b)) continue;
+
+    const d = pointToSegmentDistanceSq(point, a, b);
+    if (d < minDistance) minDistance = d;
+  }
+
+  return minDistance;
+}
+
+function polygonDistanceSq(point, polygonCoords) {
+  if (!Array.isArray(polygonCoords)) return Number.POSITIVE_INFINITY;
+
+  let minDistance = Number.POSITIVE_INFINITY;
+  for (const ring of polygonCoords) {
+    const d = ringDistanceSq(point, ring);
+    if (d < minDistance) minDistance = d;
+  }
+  return minDistance;
+}
+
+function featureBorderDistanceSq(feature, point) {
+  const type = feature?.geometry?.type;
+  const coords = feature?.geometry?.coordinates;
+
+  if (type === 'Polygon') {
+    return polygonDistanceSq(point, coords);
+  }
+
+  if (type === 'MultiPolygon' && Array.isArray(coords)) {
+    let minDistance = Number.POSITIVE_INFINITY;
+    for (const polygonCoords of coords) {
+      const d = polygonDistanceSq(point, polygonCoords);
+      if (d < minDistance) minDistance = d;
+    }
+    return minDistance;
+  }
+
+  return Number.POSITIVE_INFINITY;
+}
+
 function findNearestRegionIndex(regions, point) {
   if (!isValidPoint(point)) return -1;
 
   let nearestIndex = -1;
   let nearestDistance = Number.POSITIVE_INFINITY;
 
-  for (const { i, centroidLonLat } of regions) {
-    if (!isValidPoint(centroidLonLat)) continue;
-    const lonDelta = centroidLonLat[0] - point[0];
-    const latDelta = centroidLonLat[1] - point[1];
-    const distance = lonDelta ** 2 + latDelta ** 2;
+  for (const { i, feature, bbox } of regions) {
+    // Optional quick reject: if bbox is invalid, just skip this optimization
+    if (bbox && !pointInBbox(point, bbox)) {
+      // don't continue here; nearest-border should still consider non-overlapping bboxes
+      // because point is outside all regions by design in fallback case.
+    }
+
+    const distance = featureBorderDistanceSq(feature, point);
     if (distance < nearestDistance) {
       nearestDistance = distance;
       nearestIndex = i;
