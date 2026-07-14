@@ -8,13 +8,15 @@ export default {
   data: new SlashCommandBuilder()
     .setName('format')
     .setDescription('Formats warera links')
-    .addStringOption((option) => option.setName('link').setDescription('The link to format').setRequired(true)),
+    .addStringOption((option) => option.setName('link').setDescription('The link to format').setRequired(true))
+    .addStringOption((option) => option.setName('ordini').setDescription('Messaggio aggiuntivo').setRequired(false)),
 
   async execute(interaction) {
     const startTime = performance.now();
     await interaction.deferReply();
     try{
       const link = interaction.options.getString('link',true);
+      const ordini = interaction.options.getString('ordini');
       const result = await formatLink(link);
       switch(result.length){
         case(1):
@@ -23,13 +25,13 @@ export default {
         case(2):
           await interaction.editReply({
             content: result[0],
-            embeds: [result[1]]
+            embeds: [result[1].setDescription('**'+ordini+'**')]
           });
           break;
         default:
           await interaction.editReply({
             content: result[0],
-            embeds: [result[1]],
+            embeds: [result[1].setDescription('**'+ordini+'**')],
             files: [result[2]]
           });
       }
