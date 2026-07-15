@@ -57,15 +57,15 @@ async function formatLink(link){
   const id = parts[1];
   switch (parts[0]){
     case 'article':
-      return getArticleData(link, id);
+      return getArticleData(link,id);
     case 'user':
-      return getUserData(link, id);
+      return getUserData(link,id);
     case 'region':
       return getRegionData(link, id)
     case 'battle':
-      return getBattleData(link, id);
+      return getBattleData(link,id);
     case 'company':
-      return getCompanyData(link, id);
+      return getCompanyData(link,id);
     default:
       return ['Feature not implemented yet',null]
       

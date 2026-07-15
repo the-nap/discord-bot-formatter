@@ -103,7 +103,6 @@ function reviver(key, value) {
 }
 
 function createCentroidCache(dataMap){
-  console.log(regionCentroidsCache)
   if(!regionCentroidsCache){
     regionCentroidsCache = new Map();
     for (const[id, geometry] of dataMap.entries()) {

@@ -21,12 +21,14 @@ export default async function getBattleData(link, id){
   let svg;
   let isRevolt;
 
+  console.log(battle.attacker.region)
+
   if(battle.attacker.region){
     isRevolt = false;
     svg = renderBattleMap([battle.defender.region, battle.attacker.region]);
   } else {
     isRevolt = true;
-    svg = renderBattleMap([battle.defender.Region]);
+    svg = renderBattleMap([battle.defender.region]);
   }
 
   const pngBuffer = await sharp(Buffer.from(svg, "utf8")).png().toBuffer();
