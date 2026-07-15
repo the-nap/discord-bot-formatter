@@ -7,6 +7,8 @@ import  Canvas  from "@napi-rs/canvas";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const [ WIDTH, HEIGHT ] = [256, 256];
+
 const emptyPath = path.join(__dirname, '../assets/frame.png');
 
 export default async function getUserData(link, id){
@@ -77,8 +79,7 @@ export default async function getUserData(link, id){
 }
 
 async function createImage(equipment) {
-  const [ COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC ] = [ 0, 1, 2, 3, 4 ,5];
-  const canvas = Canvas.createCanvas(256*7 + 70, 256+20);
+  const canvas = Canvas.createCanvas(WIDTH*7 + 70, HEIGHT+20);
   const context = canvas.getContext('2d');
   context.fillStyle = '#101416';
   context.fillRect(0,0, canvas.width, canvas.height);
@@ -117,21 +118,19 @@ async function createImage(equipment) {
   for( let i = 0; i < data.length; i++ ){
 
     const [x0, y0] = [10 + i*266, 10]
-    const [x1, y1] = [x0+256, y0+256];
 
     if(data[i].tier !== undefined){
       console.log(data[i].tier);
       console.log(rarities[data[i].tier]);
 
-
-      const g = context.createLinearGradient(x0, y0, x1, y1);
+      const g = context.createLinearGradient(x0, y0, x0+WIDTH, y0+HEIGHT);
       g.addColorStop(0, rarities[data[i].tier][0]);
       g.addColorStop(1, rarities[data[i].tier][1]);
 
       context.fillStyle = g;
-      context.fillRect(x0, y0, 256, 256)
+      context.fillRect(x0, y0, x0+WIDTH, y0+HEIGHT)
     }
-    context.drawImage(data[i].image, x0, y0, 256, 256)
+    context.drawImage(data[i].image, x0, y0, WIDTH, HEIGHT)
   }
 
   return canvas.toBuffer('image/png');
