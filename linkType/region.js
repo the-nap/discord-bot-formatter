@@ -5,6 +5,7 @@ import sharp from "sharp";
 
 export default async function getRegionData(link, id){
   const client = createAPIClient();
+
   const region = await client.region.getById({ regionId: id });
 
   const svg = renderBattleMap([id]);

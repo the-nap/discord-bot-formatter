@@ -6,13 +6,17 @@ import sharp from "sharp";
 export default async function getBattleData(link, id){
   const client = createAPIClient();
 
-  const battle = await client.battle.getById({ battleId: id });
-  const battleDetails = await client.battle.getLiveBattleData({ battleId: id });
-
-  const defender = await client.country.getCountryById({ countryId: battle.defender.country });
-  const defenderRegion = await client.region.getById({ regionId: battle.defender.region });
-
-  const attacker = await client.country.getCountryById({ countryId: battle.attacker.country });
+  
+  const [battle, battleDetails] = await Promise.all([
+    client.battle.getById({ battleId: id }),
+    client.battle.getLiveBattleData({ battleId: id })
+  ]);
+ 
+  const [defender, defenderRegion, attacker] = await Promise.all([
+    client.country.getCountryById({ countryId: battle.defender.country }),
+    client.region.getById({ regionId: battle.defender.region }),
+    client.country.getCountryById({ countryId: battle.attacker.country })
+  ]);
 
   let svg;
   let isRevolt;
@@ -36,7 +40,7 @@ export default async function getBattleData(link, id){
 
   const points = () => { 
     if(isRevolt)
-      return ` ${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ✊${attacker.name}` 
+      return ` ${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ✊${attacker.name}  ` 
     return `${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${attacker.name}`
 
   }
