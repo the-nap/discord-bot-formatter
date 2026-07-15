@@ -13,6 +13,7 @@ export default async function getCompanyData(link, id){
 
   let offers = '';
   let requisites = '';
+  let workers;
   if ( workOffersRequest.status === 'fulfilled' ) {
     const workOffers = workOffersRequest.value;
     offers = `${workOffers.quantity} offerte disponibili a ${workOffers.wage} (${workOffers.wageAfterTax})`;
@@ -28,12 +29,18 @@ export default async function getCompanyData(link, id){
   }
   if(requisites === '')
       requisites = 'Nessun requisito richiesto';
+  if(company.workerCount === 1){
+    workers = `1 dipendente`;
+  } else {
+    workers = `${company.workerCount} dipendenti`;
+  }
   
   const embed = new EmbedBuilder()
     .setTitle(company.name)
     .setURL(link)
     .setThumbnail(`https://app.warera.io/images/map/${company.itemCode}.png?v=21`)
     .addFields(
+      { name: 'Dipendenti', value: workers },
       { name: 'Offerte', value: offers },
       { name: 'Requisiti', value: requisites }
     );
