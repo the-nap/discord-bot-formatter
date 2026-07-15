@@ -1,7 +1,13 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import  Canvas  from "@napi-rs/canvas";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const emptyPath = path.join(__dirname, '../assets/frame.png');
 
 export default async function getUserData(link, id){
   const client = createAPIClient();
@@ -67,8 +73,6 @@ export default async function getUserData(link, id){
   )
   .setImage('attachment://equip.png');
 
-  console.log("ended");
-
   return ['', embed, file];
 }
 
@@ -80,7 +84,7 @@ async function createImage(equipment) {
   context.fillRect(0,0, canvas.width, canvas.height);
 
   const rarities = [
-    ['#252E34', '#101416'], // Common
+    ['#49565F', '#273136'], // Common
     ['#13301E', '#08150D'], // Uncommon
     ['#102249', '#070F1F'], // Rare
     ['#291A3F', '#120B1B'], // Epic
@@ -88,54 +92,47 @@ async function createImage(equipment) {
     ['#411212', '#1C0808'], // Mythic
   ];
 
-  const backgrounds = rarities.map(([startColor, endColor], i ) => {
-    const g = context.createLinearGradient(
-      10 + i * (256+10),
-      10,
-      (i + 1) * 256,
-      266
-  );
-  g.addColorStop(0, startColor);
-  g.addColorStop(1, endColor);
-  return g;
-  });
-
   const slots = [
-    equipment.weapon.code,
+    equipment.weapon?.code,
     equipment.ammo,
-    equipment.helmet.code,
-    equipment.chest.code,
-    equipment.gloves.code,
-    equipment.pants.code,
-    equipment.boots.code
+    equipment.helmet?.code,
+    equipment.chest?.code,
+    equipment.gloves?.code,
+    equipment.pants?.code,
+    equipment.boots?.code
   ];
 
   const parsedEquipment = slots.map((item) => parseEquipment(item));
 
-
-  console.time("load");
   const data = await Promise.all(
     parsedEquipment.map(async parsed => ({
-      tier: parsed.tier,
+      tier: parsed?.tier,
       image: parsed
         ? await Canvas.loadImage(`https://app.warera.io/images/items/${parsed.name}.png`)
-        : null
+        : await Canvas.loadImage(emptyPath)
     }))
   );
 
-  console.timeEnd("load")
 
-  console.time("drawAll")
   for( let i = 0; i < data.length; i++ ){
-    console.time("draw"+i);
-    context.fillStyle = backgrounds[data[i].tier];
-    let x0 = 10+i*266;
-    const y0 = 10;
-    context.fillRect(x0, y0, 256, 256)
+
+    const [x0, y0] = [10 + i*266, 10]
+    const [x1, y1] = [x0+256, y0+256];
+
+    if(data[i].tier !== undefined){
+      console.log(data[i].tier);
+      console.log(rarities[data[i].tier]);
+
+
+      const g = context.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, rarities[data[i].tier][0]);
+      g.addColorStop(1, rarities[data[i].tier][1]);
+
+      context.fillStyle = g;
+      context.fillRect(x0, y0, 256, 256)
+    }
     context.drawImage(data[i].image, x0, y0, 256, 256)
-    console.timeEnd("draw"+i);
   }
-  console.timeEnd("drawAll");
 
   return canvas.toBuffer('image/png');
 }
@@ -192,7 +189,7 @@ function parseEquipment(item){
       const match = item.match(/^([a-zA-Z]+)(\d+)?$/);
       return {
         name: match[1],
-        tier: Number(match[2])
+        tier: Number(match[2] - 1)
       }
   }
 }
