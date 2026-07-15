@@ -13,14 +13,10 @@
   "description": "",
   "dependencies": {
     "@wareraprojects/api": "^0.3.3",
-    "convert-svg-to-jpeg": "^0.7.1",
+    "cross-env": "^10.1.0",
     "d3-geo": "^3.1.1",
     "discord.js": "^14.26.5",
-    "imgbb-uploader": "^1.5.1",
     "sharp": "^0.35.3",
-    "topojson-client": "^3.1.0",
-    "cross-env": "^10.1.0"
-  },
-  "devDependencies": {
+    "topojson-client": "^3.1.0"
   }
 }
