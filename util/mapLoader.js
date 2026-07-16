@@ -12,7 +12,8 @@ const BOUNDS_PATH = new URL("./cache/bounds.json", import.meta.url);
 export async function loadMapAndBounds(){
   if(existsSync( MAP_PATH ) && existsSync( BOUNDS_PATH )){
     const map = await readFile(MAP_PATH, "utf8");
-    const bounds = await readFile(BOUNDS_PATH, "utf8");
+    const boundsJson = await readFile(BOUNDS_PATH, "utf8");
+    const bounds = JSON.parse(boundsJson, reviver);
     return { map, bounds }
   }
 
@@ -23,7 +24,7 @@ export async function loadMapAndBounds(){
 
 
   await writeFile(MAP_PATH, mapAndBounds.map, "utf8");
-  await writeFile(BOUNDS_PATH, mapAndBounds.bounds, "utf8");
+  await writeFile(BOUNDS_PATH, JSON.stringify(mapAndBounds.bounds, replacer), "utf8");
 
   return mapAndBounds;
 }
@@ -52,6 +53,26 @@ async function getMapData() {
     }
     const map = await res.json();
     return topoToGeo(map);
+}
+
+function replacer(key, value) {
+  if(value instanceof Map) {
+    return {
+      dataType: 'Map',
+      value: Array.from(value.entries()),
+    };
+  } else {
+    return value;
+  }
+}
+
+function reviver(key, value) {
+  if(typeof value === 'object' && value !== null) {
+    if (value.dataType === 'Map') {
+      return new Map(value.value);
+    }
+  }
+  return value;
 }
 
 //transforms topoJson to geoJson
