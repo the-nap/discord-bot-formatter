@@ -8,14 +8,15 @@ export default async function getMuData(link, id){
 
   const mu = await client.mu.getById({ muId: id })
 
-  const muMembers = await Promise.all(
+  let  muMembers = await Promise.all(
     mu.members.map((member) => {
     return client.user.getUserLite({ userId: member })
     })
   );
 
+  muMembers = muMembers.filter( user => user.isActive );
   const inWar = 
-    muMembers.filter( user => isInWar(user.skills)).length;
+    muMembers.filter( user => isInWar(user.skills) ).length;
 
   const membersDamage = 
     muMembers.sort((a,b) => {
