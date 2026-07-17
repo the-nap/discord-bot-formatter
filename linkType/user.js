@@ -1,6 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { getEquipFormatted } from "../util/equipMaker.js";
+import { isInWar } from "../util/skillset.js";
 
 export default async function getUserData(link, id){
   const client = createAPIClient();
@@ -41,9 +42,8 @@ export default async function getUserData(link, id){
       return "💡 Lavoro aut. **PIENA!**";
     return `💡 Lavoro aut. ${current} / ${total}`;
   }
-
   const skillSet = () => {
-    if(user.skills.attack.level > 3 && user.skills.precision.level > 3 && user.skills.energy.level < 2 && user. skills.production.level < 3)
+    if(isInWar(user.skills))
       return '⚔️ War';
     return '💰 Eco';
   }

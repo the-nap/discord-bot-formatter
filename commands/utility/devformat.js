@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 import getArticleData from '../../linkType/article.js';
 import getCompanyData from '../../linkType/company.js';
+import getMuData from '../../linkType/mu.js';
 import getUserData from '../../linkType/user.js';
 import getBattleData from '../../linkType/battle.js';
 import getRegionData from '../../linkType/region.js';
@@ -66,6 +67,8 @@ async function formatLink(link){
       return getBattleData(link,id);
     case 'company':
       return getCompanyData(link,id);
+    case 'mu':
+      return getMuData(link,id);
     default:
       return ['Feature not implemented yet',null]
       
