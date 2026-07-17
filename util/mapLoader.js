@@ -8,13 +8,14 @@ const HEIGHT = 300;
 
 const MAP_PATH = new URL("./cache/map.html", import.meta.url)
 const BOUNDS_PATH = new URL("./cache/bounds.json", import.meta.url);
+const REGIONS_PATH = new URL("./cache/regions.json", import.meta.url);
 
 export async function loadMapAndBounds(){
   if(existsSync( MAP_PATH ) && existsSync( BOUNDS_PATH )){
     const map = await readFile(MAP_PATH, "utf8");
-    const boundsJson = await readFile(BOUNDS_PATH, "utf8");
-    const bounds = JSON.parse(boundsJson, reviver);
-    return { map, bounds }
+    const bounds = JSON.parse( await readFile(BOUNDS_PATH, "utf8") );
+    const regions = JSON.parse( await readFile(REGIONS_PATH, "utf8") );
+    return { map, bounds, regions }
   }
 
   const geojsonData = await getRegionsData();
@@ -22,21 +23,23 @@ export async function loadMapAndBounds(){
   const path = geoPath(projection);
   const mapAndBounds = getMapAndBounds(path, geojsonData.features);
 
-
   await writeFile(MAP_PATH, mapAndBounds.map, "utf8");
-  await writeFile(BOUNDS_PATH, JSON.stringify(mapAndBounds.bounds, replacer), "utf8");
+  await writeFile(BOUNDS_PATH, JSON.stringify(mapAndBounds.bounds), "utf8");
+  await writeFile(REGIONS_PATH, JSON.stringify(mapAndBounds.regions), "utf8");
 
   return mapAndBounds;
 }
 
 function getMapAndBounds(path, geojsonData){
-  const bounds = new Map();
+  const bounds = {};
+  const regions = {};
   const paths = [];
   for( let element of geojsonData ){
     paths.push(`<path d="${path(element)}" />`);
-    bounds.set(element.id, path.bounds( element ));
+    bounds[element.id] = path.bounds(element);
+    regions[element.id] = path(element);
   }
-  return { map: paths.join(''), bounds };
+  return { map: paths.join(''), bounds, regions }
 }
 
 //returns geojson data
@@ -53,26 +56,6 @@ async function getMapData() {
     }
     const map = await res.json();
     return topoToGeo(map);
-}
-
-function replacer(key, value) {
-  if(value instanceof Map) {
-    return {
-      dataType: 'Map',
-      value: Array.from(value.entries()),
-    };
-  } else {
-    return value;
-  }
-}
-
-function reviver(key, value) {
-  if(typeof value === 'object' && value !== null) {
-    if (value.dataType === 'Map') {
-      return new Map(value.value);
-    }
-  }
-  return value;
 }
 
 //transforms topoJson to geoJson

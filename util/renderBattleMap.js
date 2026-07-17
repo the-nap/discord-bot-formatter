@@ -16,8 +16,7 @@ function computeFocusTransform(regionIds) {
   let y1 = -Infinity;
   
   for (const id of regionIds) {
-      console.log("3 " + mapAndBounds);
-      const bounds = mapAndBounds.bounds.get(id);
+      const bounds = mapAndBounds.bounds[id];
   
       if (!bounds) continue;
   
@@ -43,10 +42,9 @@ function computeFocusTransform(regionIds) {
 
 function paint(regionIds) {
   let out = "";
-  console.log(regionIds);
-  out += `<path d="${mapAndBounds.bounds.get(regionIds[0])}" fill="#ef4444" />`;
+  out += `<path d="${mapAndBounds.regions[regionIds[0]]}" fill="#ef4444" />`;
   if(regionIds.length > 1)
-    out += `<path d="${mapAndBounds.bounds.get(regionIds[1])}" fill="#22c55e" />`;
+    out += `<path d="${mapAndBounds.regions[regionIds[1]]}" fill="#22c55e" />`;
   return out;
 }
 

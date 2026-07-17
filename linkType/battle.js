@@ -21,8 +21,6 @@ export default async function getBattleData(link, id){
   let svg;
   let isRevolt;
 
-  console.log(battle.attacker.region)
-
   if(battle.attacker.region){
     isRevolt = false;
     svg = renderBattleMap([battle.defender.region, battle.attacker.region]);
