@@ -6,41 +6,40 @@ import { feature } from "topojson-client";
 const WIDTH = 500;
 const HEIGHT = 300;
 
-const MAP_PATH = new URL("./cache/map.html", import.meta.url)
-const BOUNDS_PATH = new URL("./cache/bounds.json", import.meta.url);
-const REGIONS_PATH = new URL("./cache/regions.json", import.meta.url);
+const MAP_DATA = new URL("./cache/mapData.json", import.meta.url)
 
 export async function loadMapAndBounds(){
-  if(existsSync( MAP_PATH ) && existsSync( BOUNDS_PATH )){
-    const map = await readFile(MAP_PATH, "utf8");
-    const bounds = JSON.parse( await readFile(BOUNDS_PATH, "utf8") );
-    const regions = JSON.parse( await readFile(REGIONS_PATH, "utf8") );
-    return { map, bounds, regions }
+  if( existsSync( MAP_DATA ) ) {
+    return JSON.parse( await readFile(MAP_DATA, "utf8") )
   }
 
   const geojsonData = await getRegionsData();
   const projection = geoMercator().fitSize([WIDTH, HEIGHT], geojsonData);
   const path = geoPath(projection);
-  const mapAndBounds = getMapAndBounds(path, geojsonData.features);
+  const mapData = buildMapCache(path, geojsonData.features);
 
-  await writeFile(MAP_PATH, mapAndBounds.map, "utf8");
-  await writeFile(BOUNDS_PATH, JSON.stringify(mapAndBounds.bounds), "utf8");
-  await writeFile(REGIONS_PATH, JSON.stringify(mapAndBounds.regions), "utf8");
+  await writeFile(MAP_DATA, JSON.stringify(mapData), "utf8");
 
-  return mapAndBounds;
+  return mapData;
 }
 
-function getMapAndBounds(path, geojsonData){
-  const bounds = {};
-  const regions = {};
+function buildMapCache(path, geojsonData){
+  const cache = {
+    map:"",
+    regions: {},
+    bounds: {}
+  }
   const paths = [];
   for( let element of geojsonData ){
-    paths.push(`<path d="${path(element)}" />`);
-    bounds[element.id] = path.bounds(element);
-    regions[element.id] = path(element);
+    const d = path(element)
+    paths.push(`<path d="${d}" fill="#1e293b" />`);
+    cache.bounds[element.id] = path.bounds(element);
+    cache.regions[element.id] = d;
   }
-  return { map: paths.join(''), bounds, regions }
+  cache.map = paths.join('');
+  return cache;
 }
+
 
 //returns geojson data
 async function getRegionsData(){
