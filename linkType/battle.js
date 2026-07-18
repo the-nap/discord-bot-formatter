@@ -42,7 +42,7 @@ export default async function getBattleData(link, id){
   let svg;
 
   if(battleType === 'war'){
-    svg = renderBattleMap([data.battle.defender.region, battle.attacker.region]);
+    svg = renderBattleMap([battle.defender.region, battle.attacker.region]);
   } else if( battleType === 'resistance'){
     svg = renderBattleMap([battle.defender.region]);
   }
@@ -53,38 +53,38 @@ export default async function getBattleData(link, id){
     file = new AttachmentBuilder(pngBuffer, { name: "region.png" });
   }
 
-  const round = () => {
-    if ( !battle.isActive )
-      return 'La battaglia è terminata';
-    return `Round ${battleDetails.battle.roundIds.length} in corso` ;
-  }
+  const left = battleType === "tournament"
+    ? `Team ${data.defender.number}`
+    : data.defender.name;
 
-  const points = () => { 
-    if(battleType === 'resistance')
-      return `${data.defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ✊${data.attacker.name}` 
-    if(battleType === 'tournament')
-      return `Team ${data.defender.number}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️Team ${data.attacker.number}`
-    return `${data.defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${data.attacker.name}`
-  }
+  const right = battleType === "tournament"
+    ? `Team ${data.attacker.number}`
+    : data.attacker.name;
 
-  const title = () => {
-    if(battleType === 'tournament')
-      return `Turno ${battle.tournamentRoundNumber}`;
-    return `${data.defender.name}`;
-  }
+  const icon = battleType === "resistance" ? "✊" : "⚔️";
+  
+  const points =
+    `${left}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ${icon}${right}`;
+
+  const title = battleType === "tournament"
+    ? `Turno ${battle.tournamentRoundNumber}`
+    : data.defender.name;
+
+  const round = !battle.isActive
+    ? "La battaglia è terminata"
+    : `Round ${battleDetails.battle.roundIds.length} in corso`;
 
 
   const embed = new EmbedBuilder()
-  .setTitle(title())
+  .setTitle(title)
   .setURL(link)
   .addFields(
-    { name: '', value: `${points()}` },
-    { name: '', value: `${round()}` }
+    { name: '', value: points },
+    { name: '', value: round }
   )
   .setImage("attachment://region.png");
 
   if(file)
     return ['', embed, file];
   return['', embed];
-
 }
