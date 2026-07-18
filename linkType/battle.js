@@ -30,14 +30,7 @@ export default async function getBattleData(link, id){
       };
   }
 
-  const data = Object.fromEntries(
-    await Promise.all(
-      Object.entries(requests).map(async ([key, promise]) => [
-        key,
-        await promise
-      ])
-    )
-  )
+  const data = await resolveRequests(requests);
 
   let svg;
 
@@ -87,4 +80,12 @@ export default async function getBattleData(link, id){
   if(file)
     return ['', embed, file];
   return['', embed];
+}
+
+async function resolveRequests(requests) {
+    return Object.fromEntries(
+        await Promise.all(
+            Object.entries(requests).map(async ([k, p]) => [k, await p])
+        )
+    );
 }
