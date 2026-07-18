@@ -11,26 +11,47 @@ export default async function getBattleData(link, id){
     client.battle.getById({ battleId: id }),
     client.battle.getLiveBattleData({ battleId: id })
   ]);
- 
-  const [defender, defenderRegion, attacker] = await Promise.all([
-    client.country.getCountryById({ countryId: battle.defender.country }),
-    client.region.getById({ regionId: battle.defender.region }),
-    client.country.getCountryById({ countryId: battle.attacker.country })
-  ]);
+
+  const battleType = battle.type;
+
+  let requests = {};
+  switch (battleType){
+    case 'tournament':
+      requests = {
+        attacker: client.tournamentTeam.getById({ tournamentTeamId: battle.attacker.tournamentTeam }),
+        defender: client.tournamentTeam.getById({ tournamentTeamId: battle.defender.tournamentTeam })
+      };
+      break;
+    default:
+      requests = {
+        defender: client.country.getCountryById({ countryId: battle.defender.country }),
+        region: client.region.getById({ regionId: battle.defender.region }),
+        attacker: client.country.getCountryById({ countryId: battle.attacker.country })
+      };
+  }
+
+  const data = Object.fromEntries(
+    await Promise.all(
+      Object.entries(requests).map(async ([key, promise]) => [
+        key,
+        await promise
+      ])
+    )
+  )
 
   let svg;
-  let isRevolt;
 
-  if(battle.attacker.region){
-    isRevolt = false;
-    svg = renderBattleMap([battle.defender.region, battle.attacker.region]);
-  } else {
-    isRevolt = true;
+  if(battleType === 'war'){
+    svg = renderBattleMap([data.battle.defender.region, battle.attacker.region]);
+  } else if( battleType === 'resistance'){
     svg = renderBattleMap([battle.defender.region]);
   }
 
-  const pngBuffer = await sharp(Buffer.from(svg, "utf8")).png().toBuffer();
-  const file = new AttachmentBuilder(pngBuffer, { name: "region.png" });
+  let file;
+  if(svg){
+    const pngBuffer = await sharp(Buffer.from(svg, "utf8")).png().toBuffer();
+    file = new AttachmentBuilder(pngBuffer, { name: "region.png" });
+  }
 
   const round = () => {
     if ( !battle.isActive )
@@ -39,14 +60,22 @@ export default async function getBattleData(link, id){
   }
 
   const points = () => { 
-    if(isRevolt)
-      return ` ${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ✊${attacker.name}  ` 
-    return `${defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${attacker.name}`
-
+    if(battleType === 'resistance')
+      return `${data.defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ✊${data.attacker.name}` 
+    if(battleType === 'tournament')
+      return `Team ${data.defender.number}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️Team ${data.attacker.number}`
+    return `${data.defender.name}🛡️ ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount} ⚔️${data.attacker.name}`
   }
 
+  const title = () => {
+    if(battleType === 'tournament')
+      return `Turno ${battle.tournamentRoundNumber}`;
+    return `${data.defender.name}`;
+  }
+
+
   const embed = new EmbedBuilder()
-  .setTitle(defenderRegion.name)
+  .setTitle(title())
   .setURL(link)
   .addFields(
     { name: '', value: `${points()}` },
@@ -54,6 +83,8 @@ export default async function getBattleData(link, id){
   )
   .setImage("attachment://region.png");
 
-  return ['', embed, file]
+  if(file)
+    return ['', embed, file];
+  return['', embed];
 
 }
