@@ -61,7 +61,7 @@ export default async function getBattleData(link, id){
 
   const title = battleType === "tournament"
     ? `Turno ${battle.tournamentRoundNumber}`
-    : data.defender.name;
+    : data.region.name;
 
   const round = !battle.isActive
     ? "La battaglia è terminata"
