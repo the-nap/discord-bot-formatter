@@ -42,35 +42,39 @@ export default {
       }
 
     } catch (err) {
-      console.error(err)
-      await interaction.editReply("Something went wrong while formatting this link.");
+      console.log('Thrown error');
+      await interaction.editReply("Link non supportato");
     }
     const endTime = performance.now();
     console.log(`Total call took ${endTime - startTime} milliseconds`);
   }
 };
 
+const handlers = {
+  article: getArticleData,
+  user: getUserData,
+  battle: getBattleData,
+  region: getRegionData,
+  company: getCompanyData,
+  mu: getMuData,
+}
 
 async function formatLink(link){
 
   const url = new URL(link);
+  if(url.hostname !== 'app.warera.io')
+    throw new Error('Unsupported website')
   const parts = url.pathname.split('/').filter(Boolean);
-  const id = parts[1];
-  switch (parts[0]){
-    case 'article':
-      return getArticleData(link,id);
-    case 'user':
-      return getUserData(link,id);
-    case 'region':
-      return getRegionData(link, id)
-    case 'battle':
-      return getBattleData(link,id);
-    case 'company':
-      return getCompanyData(link,id);
-    case 'mu':
-      return getMuData(link,id);
-    default:
-      return ['Feature not implemented yet',null]
-      
+
+  if(!parts[1]){
+    throw new Error('Unsupported Link');
   }
+
+  const id = parts[1];
+  const handler = handlers[parts[0]];
+
+  if(!handler)
+    return ['Ottima idea, ma ancora non si può fare'];
+
+  return handler(link, id)
 }

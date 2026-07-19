@@ -67,57 +67,46 @@ export async function getEquipFormatted(equipment) {
 
 function parseEquipment(item){
   if (!item) return null;
-  switch(item) {
-    case 'lightAmmo':
-      return {
-        name: item,
-        tier: 1,
-      }
-    case 'ammo':
-      return {
-        name: item,
-        tier: 2,
-      }
-    case 'heavyAmmo':
-      return {
-        name: item,
-        tier: 3,
-      }
-    case 'knife':
-      return {
-        name: item,
-        tier: 0,
-      }
-    case 'gun':
-      return {
-        name: item,
-        tier: 1,
-      }
-    case 'rifle':
-      return {
-        name: item,
-        tier: 2,
-      }
-    case 'sniper':
-      return {
-        name: item,
-        tier: 3,
-      }
-    case 'tank':
-      return {
-        name: item,
-        tier: 4,
-      }
-    case 'jet':
-      return {
-        name: item,
-        tier: 5,
-      }
-    default:
-      const match = item.match(/^([a-zA-Z]+)(\d+)?$/);
-      return {
-        name: match[1],
-        tier: Number(match[2] - 1)
-      }
+
+  if(equipmentType[item]) {
+    return {
+      name: item,
+      ...equipmentType[item],
+    };
   }
+  const match = item.match(/^([a-zA-Z]+)(\d+)?$/);
+  return {
+    name: match[1],
+    tier: Number(match[2] - 1)
+  }
+}
+
+const equipmentType = {
+  'lightAmmo': { 
+    tier: 1
+  },
+  'ammo': {
+    tier: 2,
+  },
+  'heavyAmmo': {
+    tier: 3,
+  },
+  'knife': {
+    tier: 0,
+  },
+  'gun': {
+    tier: 1,
+  },
+  'rifle': {
+    tier: 2,
+  },
+  'sniper': {
+    tier: 3,
+  },
+  'tank': {
+    tier: 4,
+  },
+  'jet': {
+    tier: 5,
+  },
 }
