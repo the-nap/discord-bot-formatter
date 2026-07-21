@@ -75,10 +75,11 @@ export default async function getBattleData(link, id){
     { name: '', value: points },
     { name: '', value: round }
   )
-  .setImage("attachment://region.png");
-
-  if(file)
+  if(file){
+    embed.setImage("attachment://region.png");
     return ['', embed, file];
+  }
+
   return['', embed];
 }
 
