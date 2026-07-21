@@ -40,7 +40,6 @@ function buildMapCache(path, geojsonData){
   return cache;
 }
 
-
 //returns geojson data
 async function getRegionsData(){
   const geoData = await getMapData();
