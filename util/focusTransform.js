@@ -2,14 +2,19 @@ const MIN_ZOOM = 1.5;
 const MAX_ZOOM = 18;
 const PADDING = 16; // px
 
-export default function computeFocusTransform(regionIds) {
+export default function computeFocusTransform(allBounds, regionIds, width, height) {
   let x0 = Infinity;
   let y0 = Infinity;
   let x1 = -Infinity;
   let y1 = -Infinity;
+
+  if(!allBounds || Object.keys(allBounds).length === 0)
+    return null;
+  if(!regionIds || regionIds.length === 0)
+    return null;
   
   for (const id of regionIds) {
-      const bounds = mapAndBounds.bounds[id];
+      const bounds = allBounds[id];
   
       if (!bounds) continue;
   
@@ -20,11 +25,14 @@ export default function computeFocusTransform(regionIds) {
       y1 = Math.max(y1, bounds[1][1]);
   }
 
+  if( Math.max(x0,x1,y0,y1) === Infinity || Math.min(x0,x1,y0,y1) === -Infinity)
+    return null;
+
     const boxW = Math.max(1, x1 - x0);
     const boxH = Math.max(1, y1 - y0);
   
-    const zoomX = (WIDTH - 2 * PADDING) / boxW;
-    const zoomY = (HEIGHT - 2 * PADDING) / boxH;
+    const zoomX = (width - 2 * PADDING) / boxW;
+    const zoomY = (height - 2 * PADDING) / boxH;
     const zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(zoomX, zoomY)));
   
     const cx = (x0 + x1) / 2;

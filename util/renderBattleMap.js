@@ -4,7 +4,6 @@ import computeFocusTransform from './focusTransform.js';
 const WIDTH = 500;
 const HEIGHT = 300;
 
-
 const mapAndBounds = await loadMapAndBounds();
 
 function paint(regionIds) {
@@ -16,7 +15,7 @@ function paint(regionIds) {
 }
 
 export function renderBattleMap(regionIds) {
-  const { zoom, cx, cy } = computeFocusTransform(regionIds);
+  const { zoom, cx, cy } = computeFocusTransform(mapAndBounds.bounds, regionIds, WIDTH, HEIGHT);
   const transform = `translate(${WIDTH / 2} ${HEIGHT / 2}) scale(${zoom}) translate(${-cx} ${-cy})`;
 
   const strokeWidth = (0.6 / zoom).toFixed(4);
