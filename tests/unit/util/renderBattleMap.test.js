@@ -1,6 +1,6 @@
 import { describe, it, vi, expect } from "vitest";
 
-vi.mock("../../../util/mapLoader.js", () => ({
+vi.mock("#utils/mapLoader.js", () => ({
   loadMapAndBounds: vi.fn( async () => ({
     map: '<path d="WORLD"/>',
     regions: {
@@ -14,7 +14,7 @@ vi.mock("../../../util/mapLoader.js", () => ({
   })),
 }));
 
-const { renderBattleMap } = await import('../../../util/renderBattleMap.js');
+const { renderBattleMap } = await import('#utils/renderBattleMap.js');
 
 describe('renderBattleMap', () => {
   it('returns an svg', () => {

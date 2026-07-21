@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getEquipFormatted, parseEquipment } from "../../../util/equipMaker";
+import { getEquipFormatted, parseEquipment } from "#utils/equipMaker";
 import Canvas from "@napi-rs/canvas";
 
 const loadImage = vi.spyOn(Canvas, "loadImage")

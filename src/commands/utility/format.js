@@ -1,10 +1,10 @@
 import { SlashCommandBuilder } from 'discord.js';
-import getArticleData from '../../linkType/article.js';
-import getCompanyData from '../../linkType/company.js';
-import getMuData from '../../linkType/mu.js';
-import getUserData from '../../linkType/user.js';
-import getBattleData from '../../linkType/battle.js';
-import getRegionData from '../../linkType/region.js';
+import getArticleData from '#linkType/article.js';
+import getCompanyData from '#linkType/company.js';
+import getMuData from '#linkType/mu.js';
+import getUserData from '#linkType/user.js';
+import getBattleData from '#linkType/battle.js';
+import getRegionData from '#linkType/region.js';
 
 export default {
   cooldown: 3,
@@ -43,6 +43,7 @@ export default {
 
     } catch (err) {
       console.log('Thrown error');
+      console.log(err);
       await interaction.editReply("Link non supportato");
     }
     const endTime = performance.now();
@@ -51,15 +52,17 @@ export default {
 };
 
 const handlers = {
-  article: getArticleData,
-  user: getUserData,
-  battle: getBattleData,
-  region: getRegionData,
-  company: getCompanyData,
-  mu: getMuData,
+  'article': getArticleData,
+  'user': getUserData,
+  'battle': getBattleData,
+  'region': getRegionData,
+  'company': getCompanyData,
+  'mu': getMuData,
 }
 
 async function formatLink(link){
+
+  console.log(link);
 
   const url = new URL(link);
   if(url.hostname !== 'app.warera.io')
@@ -72,6 +75,7 @@ async function formatLink(link){
 
   const id = parts[1];
   const handler = handlers[parts[0]];
+  console.log(handler);
 
   if(!handler)
     return ['Ottima idea, ma ancora non si può fare'];

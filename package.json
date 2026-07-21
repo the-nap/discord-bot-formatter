@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "main": "app.js",
+  "imports": {
+    "#linkType/*":"./src/linkType/*",
+    "#utils/*":"./src/utils/*",
+    "#config/*":"./src/config/*"
+  },
   "scripts": {
-    "start:dev": "cross-env NODE_ENV=dev node app.js",
-    "start:prod": "cross-env NODE_ENV=prod node app.js",
+    "start:dev": "cross-env NODE_ENV=dev node src/app.js",
+    "start:prod": "cross-env NODE_ENV=prod node src/app.js",
     "test": "vitest"
   },
   "author": "the-nap",

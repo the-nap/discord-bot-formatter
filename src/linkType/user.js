@@ -1,7 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { getEquipFormatted } from "../util/equipMaker.js";
-import { isInWar } from "../util/skillset.js";
+import { getEquipFormatted } from "#utils/equipMaker.js";
+import { isInWar } from "#utils/skillset.js";
 
 export default async function getUserData(link, id){
   const client = createAPIClient();
