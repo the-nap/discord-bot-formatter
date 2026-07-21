@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isInWar } from "../../util/skillset";
+import { isInWar } from "../../../util/skillset";
 
 describe('isInWar', () => {
   it('should be in war', () => {

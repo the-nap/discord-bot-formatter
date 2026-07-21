@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import computeFocusTransform from "../../util/focusTransform";
+import computeFocusTransform from "../../../util/focusTransform";
 
 const [ WIDTH, HEIGHT ] = [500, 300];
 
