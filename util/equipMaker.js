@@ -1,13 +1,8 @@
 import Canvas  from "@napi-rs/canvas";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const [ WIDTH, HEIGHT ] = [256, 256];
 
-const emptyPath = path.join(__dirname, '../assets/frame.png');
+const emptyPath = new URL("../assets/frame.png", import.meta.url)
 
 export async function getEquipFormatted(equipment) {
   const canvas = Canvas.createCanvas(WIDTH*7 + 70, HEIGHT+20);
@@ -65,7 +60,7 @@ export async function getEquipFormatted(equipment) {
   return canvas.toBuffer('image/png');
 }
 
-function parseEquipment(item){
+export function parseEquipment(item){
   if (!item) return null;
 
   if(equipmentType[item]) {
