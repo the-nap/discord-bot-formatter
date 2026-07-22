@@ -1,5 +1,5 @@
 import { REST, Routes } from 'discord.js';
-import config from './config-loader.mjs'; 
+import config from '#config/config-loader.mjs'; 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';

@@ -6,7 +6,8 @@
   "imports": {
     "#linkType/*":"./src/linkType/*",
     "#utils/*":"./src/utils/*",
-    "#config/*":"./src/config/*"
+    "#config/*":"./src/config/*",
+    "#state/*":"./src/state/*"
   },
   "scripts": {
     "start:dev": "cross-env NODE_ENV=dev node src/app.js",

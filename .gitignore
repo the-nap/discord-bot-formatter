@@ -4,3 +4,4 @@ config.*.json
 src/utils/cache/*
 assets/
 tests/testData/
+src/state

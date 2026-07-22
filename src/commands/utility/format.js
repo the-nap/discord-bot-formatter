@@ -43,7 +43,6 @@ export default {
 
     } catch (err) {
       console.log('Thrown error');
-      console.log(err);
       await interaction.editReply("Link non supportato");
     }
     const endTime = performance.now();
@@ -61,8 +60,6 @@ const handlers = {
 }
 
 async function formatLink(link){
-
-  console.log(link);
 
   const url = new URL(link);
   if(url.hostname !== 'app.warera.io')
