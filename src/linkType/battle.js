@@ -14,23 +14,43 @@ export default async function getBattleData({ id, context }){
       (item) =>
         item.guild === context.guild &&
         item.channel === context.channel )
-    .map( item => item?.mu )[0];
+    .map( item => item?.mu );
 
   console.log(muId);
   const promises = [
     client.battle.getById({ battleId: id }),
     client.battle.getLiveBattleData({ battleId: id })
   ]
-  if(muId)
+  if(muId.length)
     promises.push(
-      client.battleRanking.getRanking({ 'battleId': id, 'type': 'mu', 'side': 'merged', 'dataType': 'damage' }),
-      client.battleRanking.getRanking({ 'battleId': id, 'type': 'user', 'side': 'merged', 'dataType': 'damage' }),
-      client.mu.getById({ muId: muId })
+      client.mu.getById({ muId: muId[0] })
     );
   
-  const [battle, battleDetails, battleRankingsMu, battleRankingUsers, mu] = await Promise.all( promises );
+  const [battle, battleDetails, mu] = await Promise.all( promises );
 
   const battleType = battle.type;
+
+  let muDamage;
+  let membersDamage;
+  if(muId.length){
+    [ muDamage, membersDamage ] = await Promise.all([
+      getAllRankings(muId, { id: id, type: 'mu' }),
+      getAllRankings(mu.members, { id: id, type: 'user' })
+    ]);
+    muDamage = { name: mu.name, damage: formatNumber(muDamage.get(muId[0])) };
+  }
+
+  const usersToFetch = membersDamage.keys().map( user => 
+    client.user.getUserLite({ userId: user })
+  )
+
+  const fetchedUsers = await Promise.all(usersToFetch);
+
+  for( let user of fetchedUsers ){
+    let value = membersDamage.get(user._id);
+    membersDamage.delete(user._id);
+    membersDamage.set(user.username, value);
+  }
 
   let requests = {};
   switch (battleType){
@@ -90,21 +110,22 @@ export default async function getBattleData({ id, context }){
     { name: '', value: round },
   ]
 
-  const muDamage = muId
-  ? battleRankingsMu.items
-    .filter( item => item.mu === muId )
-    .map( ranking => formatNumber(ranking.value) )[0]
-  : 0
-
   if(muDamage)
-    fields.push({ name:`----Danni----`, value: `${mu.name}   ${muDamage}` })
+    fields.push({ name:`----Danni----`, value: `${mu.name} ${muDamage.get(muId[0])}` })
 
-  const nameAndDamage = muId && muDamage
-  ? (await getDamage(battleRankingUsers, mu.members)).filter(item => item.value > 0).map(item => `${item.name}:  ${formatNumber(item.value)}`).join('\n')
-  : null
+  const membersDamageData = [...membersDamage.entries()];
 
-  if(nameAndDamage)
-    fields.push({ name:'Classifica', value: nameAndDamage });
+  membersDamage =
+    [...membersDamageData]
+      .sort((a,b) => {
+        return b[1] - a[1]
+      })
+      .map((user) => {
+        return `${user[0]} - ${formatNumber(user[1])}`
+      })
+      .join('\n');
+
+  fields.push({ name:'', value: membersDamage })
 
   const embed = new EmbedBuilder()
   .setTitle(title)
@@ -127,27 +148,32 @@ async function resolveRequests(requests) {
     );
 }
 
-async function getDamage(battleRankingUsers, muMembers){
+// returns map with { key: id, value: damage }
+async function getAllRankings(toSearch, rankingData){
 
-  let membersNames = await Promise.all(
-    muMembers.map(async (member) => {
-      const user = await client.user.getUserLite({ userId: member });
-      return {
-        id: member,
-        name: user.username
-      };
-    })
-  );
+  const toSearchIds = new Set(toSearch.map( item => item ));
+  let cursor;
 
-  console.log(battleRankingUsers);
-  const rankingMap = new Map(
-    battleRankingUsers.items.map(r => [r.user, r.value ?? 0])
-  );
+  let matching = new Map();
 
-  console.log(rankingMap);
-  return membersNames.map(( user ) => ({
-    name: user.name,
-    value: rankingMap.get(user.id) ?? 0
-  }));
+  while(true) {
+    const response = await client.battleRanking.getRanking({ 'battleId': rankingData.id, 'type': rankingData.type, 'side': 'merged', 'dataType': 'damage', 'cursor': cursor });
+    for( let item of response.items ){
+      if(item.value < 50000)
+        return matching;
+      if(toSearchIds.has(item.mu))
+        matching.set(item.mu, item.value);
+      if(toSearchIds.has(item.user))
+        matching.set(item.user, item.value);
+    }
 
+    if(matching.size === toSearchIds.size)
+      return matching;
+
+    if(!response.nextCursor) {
+      return matching;
+    }
+
+    cursor = response.nextCursor;
+  }
 }
