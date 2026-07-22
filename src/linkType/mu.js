@@ -1,7 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder } from "discord.js";
-import formatNumber from "../util/formatNumber.js";
-import { isInWar } from "../util/skillset.js";
+import formatNumber from "#utils/formatNumber.js";
+import { isInWar } from "#utils/skillset.js";
 
 export default async function getMuData(link, id){
   const client = createAPIClient();
@@ -14,12 +14,16 @@ export default async function getMuData(link, id){
     })
   );
 
-  muMembers = muMembers.filter( user => user.isActive );
+  muMembers = muMembers.filter( user =>
+    user.isActive && user.rankings.weeklyUserDamages
+  );
+
   const inWar = 
     muMembers.filter( user => isInWar(user.skills) ).length;
 
   const membersDamage = 
-    muMembers.sort((a,b) => {
+    [...muMembers].sort((a,b) => {
+
       return b.rankings.weeklyUserDamages.value - a.rankings.weeklyUserDamages.value;
     })
     .map((user) => {

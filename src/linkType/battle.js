@@ -1,6 +1,6 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
-import { renderBattleMap } from "../util/renderBattleMap.js";
+import { renderBattleMap } from "#utils/renderBattleMap.js";
 import sharp from "sharp";
 
 export default async function getBattleData(link, id){
@@ -75,10 +75,11 @@ export default async function getBattleData(link, id){
     { name: '', value: points },
     { name: '', value: round }
   )
-  .setImage("attachment://region.png");
-
-  if(file)
+  if(file){
+    embed.setImage("attachment://region.png");
     return ['', embed, file];
+  }
+
   return['', embed];
 }
 

@@ -3,3 +3,4 @@ config.*.json
 .env
 src/utils/cache/*
 assets/
+tests/testData/
