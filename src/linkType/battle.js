@@ -23,34 +23,35 @@ export default async function getBattleData({ id, context }){
   ]
   if(muId.length)
     promises.push(
-      client.mu.getById({ muId: muId[0] })
+      client.mu.getById({ muId: muId[0] }),
+      getAllRankings(muId, { id: id, type: 'mu' }),
     );
   
-  const [battle, battleDetails, mu] = await Promise.all( promises );
+  const [battle, battleDetails, mu, muDamageMap] = await Promise.all( promises );
 
   const battleType = battle.type;
 
-  let muDamage;
   let membersDamage;
   if(muId.length){
-    [ muDamage, membersDamage ] = await Promise.all([
-      getAllRankings(muId, { id: id, type: 'mu' }),
-      getAllRankings(mu.members, { id: id, type: 'user' })
-    ]);
-    muDamage = { name: mu.name, damage: formatNumber(muDamage.get(muId[0])) };
+    membersDamage = await getAllRankings(mu.members, { id: id, type: 'user' })
   }
 
-  const usersToFetch = membersDamage.keys().map( user => 
+  const muDamage = mu
+    ? { name: mu.name, damage: formatNumber(muDamageMap.get(muId[0])) }
+    : null;
+
+  const usersToFetch = [...membersDamage.keys()].map( user => 
     client.user.getUserLite({ userId: user })
   )
 
   const fetchedUsers = await Promise.all(usersToFetch);
 
-  for( let user of fetchedUsers ){
-    let value = membersDamage.get(user._id);
-    membersDamage.delete(user._id);
-    membersDamage.set(user.username, value);
+  const renamed = new Map();
+  
+  for (const user of fetchedUsers) {
+    renamed.set(user.username, membersDamage.get(user._id));
   }
+  membersDamage = renamed;
 
   let requests = {};
   switch (battleType){
@@ -111,21 +112,18 @@ export default async function getBattleData({ id, context }){
   ]
 
   if(muDamage)
-    fields.push({ name:`----Danni----`, value: `${mu.name} ${muDamage.get(muId[0])}` })
+    fields.push({ name:`----Danni----`, value: `${mu.name} ${muDamage.damage}` })
 
-  const membersDamageData = [...membersDamage.entries()];
+  const membersDamageData = [...membersDamage.entries()]
+    .sort((a,b) => {
+      return b[1] - a[1]
+    })
+    .map((user) => {
+      return `${user[0]} - ${formatNumber(user[1])}`
+    })
+    .join('\n');
 
-  membersDamage =
-    [...membersDamageData]
-      .sort((a,b) => {
-        return b[1] - a[1]
-      })
-      .map((user) => {
-        return `${user[0]} - ${formatNumber(user[1])}`
-      })
-      .join('\n');
-
-  fields.push({ name:'', value: membersDamage })
+  fields.push({ name:'', value: membersDamageData })
 
   const embed = new EmbedBuilder()
   .setTitle(title)
@@ -143,7 +141,9 @@ export default async function getBattleData({ id, context }){
 async function resolveRequests(requests) {
     return Object.fromEntries(
         await Promise.all(
-            Object.entries(requests).map(async ([k, p]) => [k, await p])
+            Object.entries(requests).map(([k, p]) =>
+                p.then(result => [k, result])
+            )
         )
     );
 }
@@ -151,7 +151,7 @@ async function resolveRequests(requests) {
 // returns map with { key: id, value: damage }
 async function getAllRankings(toSearch, rankingData){
 
-  const toSearchIds = new Set(toSearch.map( item => item ));
+  const toSearchIds = new Set(toSearch);
   let cursor;
 
   let matching = new Map();
@@ -161,10 +161,9 @@ async function getAllRankings(toSearch, rankingData){
     for( let item of response.items ){
       if(item.value < 50000)
         return matching;
-      if(toSearchIds.has(item.mu))
-        matching.set(item.mu, item.value);
-      if(toSearchIds.has(item.user))
-        matching.set(item.user, item.value);
+      const id = item.mu ?? item.user;
+      if(toSearchIds.has(id))
+        matching.set(id, item.value);
     }
 
     if(matching.size === toSearchIds.size)
