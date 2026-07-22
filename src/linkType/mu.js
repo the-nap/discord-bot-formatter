@@ -8,7 +8,7 @@ export default async function getMuData({ id }){
 
   const mu = await client.mu.getById({ muId: id })
 
-  let  muMembers = await Promise.all(
+  let muMembers = await Promise.all(
     mu.members.map((member) => {
     return client.user.getUserLite({ userId: member })
     })

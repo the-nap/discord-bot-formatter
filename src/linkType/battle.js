@@ -1,16 +1,34 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { renderBattleMap } from "#utils/renderBattleMap.js";
+import subscriptions from '#state/subscriptions.json' with { type:'json' }
 import sharp from "sharp";
+import formatNumber from "#utils/formatNumber.js";
+
+const client = createAPIClient();
 
 export default async function getBattleData({ id, context }){
-  const client = createAPIClient();
 
-  
-  const [battle, battleDetails] = await Promise.all([
+  const muId = subscriptions
+    .filter(
+      (item) =>
+        item.guild === context.guild &&
+        item.channel === context.channel )
+    .map( item => item?.mu )[0];
+
+  console.log(muId);
+  const promises = [
     client.battle.getById({ battleId: id }),
     client.battle.getLiveBattleData({ battleId: id })
-  ]);
+  ]
+  if(muId)
+    promises.push(
+      client.battleRanking.getRanking({ 'battleId': id, 'type': 'mu', 'side': 'merged', 'dataType': 'damage' }),
+      client.battleRanking.getRanking({ 'battleId': id, 'type': 'user', 'side': 'merged', 'dataType': 'damage' }),
+      client.mu.getById({ muId: muId })
+    );
+  
+  const [battle, battleDetails, battleRankingsMu, battleRankingUsers, mu] = await Promise.all( promises );
 
   const battleType = battle.type;
 
@@ -67,16 +85,35 @@ export default async function getBattleData({ id, context }){
     ? "La battaglia è terminata"
     : `Round ${battleDetails.battle.roundIds.length} in corso`;
 
+  const fields = [
+    { name: '', value: points },
+    { name: '', value: round },
+  ]
+
+  const muDamage = muId
+  ? battleRankingsMu.items
+    .filter( item => item.mu === muId )
+    .map( ranking => formatNumber(ranking.value) )[0]
+  : 0
+
+  if(muDamage)
+    fields.push({ name:`----Danni----`, value: `${mu.name}   ${muDamage}` })
+
+  const nameAndDamage = muId && muDamage
+  ? (await getDamage(battleRankingUsers, mu.members)).filter(item => item.value > 0).map(item => `${item.name}:  ${formatNumber(item.value)}`).join('\n')
+  : null
+
+  if(nameAndDamage)
+    fields.push({ name:'Classifica', value: nameAndDamage });
 
   const embed = new EmbedBuilder()
   .setTitle(title)
   .addFields(
-    { name: '', value: points },
-    { name: '', value: round }
+    fields
   )
   if(file){
     embed.setImage("attachment://region.png");
-    return [embed, file];
+    return {embed, file};
   }
 
   return {embed};
@@ -88,4 +125,29 @@ async function resolveRequests(requests) {
             Object.entries(requests).map(async ([k, p]) => [k, await p])
         )
     );
+}
+
+async function getDamage(battleRankingUsers, muMembers){
+
+  let membersNames = await Promise.all(
+    muMembers.map(async (member) => {
+      const user = await client.user.getUserLite({ userId: member });
+      return {
+        id: member,
+        name: user.username
+      };
+    })
+  );
+
+  console.log(battleRankingUsers);
+  const rankingMap = new Map(
+    battleRankingUsers.items.map(r => [r.user, r.value ?? 0])
+  );
+
+  console.log(rankingMap);
+  return membersNames.map(( user ) => ({
+    name: user.name,
+    value: rankingMap.get(user.id) ?? 0
+  }));
+
 }

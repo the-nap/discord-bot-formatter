@@ -6,7 +6,7 @@ import { feature } from "topojson-client";
 const WIDTH = 500;
 const HEIGHT = 300;
 
-const MAP_DATA = new URL("./cache/mapData.json", import.meta.url)
+const MAP_DATA = new URL("../state/cache/mapData.json", import.meta.url)
 
 export async function loadMapAndBounds(){
   if( existsSync( MAP_DATA ) ) {
