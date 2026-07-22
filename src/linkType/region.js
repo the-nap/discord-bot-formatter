@@ -3,7 +3,7 @@ import { EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { renderBattleMap } from "#utils/renderBattleMap.js";
 import sharp from "sharp";
 
-export default async function getRegionData(link, id){
+export default async function getRegionData({ id }){
   const client = createAPIClient();
 
   const region = await client.region.getById({ regionId: id });
@@ -15,9 +15,8 @@ export default async function getRegionData(link, id){
 
   const embed = new EmbedBuilder()
   .setTitle(region.name)
-  .setURL(link)
   .setImage("attachment://region.png");
 
-  return ['', embed, file]
+  return {embed, file};
 
 }

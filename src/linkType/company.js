@@ -1,7 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder } from "discord.js";
 
-export default async function getCompanyData(link, id){
+export default async function getCompanyData({ id }){
   const client = createAPIClient();
 
   const [companyRequest, workOffersRequest] = await Promise.allSettled([
@@ -37,7 +37,6 @@ export default async function getCompanyData(link, id){
   
   const embed = new EmbedBuilder()
     .setTitle(company.name)
-    .setURL(link)
     .setThumbnail(`https://app.warera.io/images/map/${company.itemCode}.png?v=21`)
     .addFields(
       { name: 'Dipendenti', value: workers },
@@ -45,6 +44,6 @@ export default async function getCompanyData(link, id){
       { name: 'Requisiti', value: requisites }
     );
 
-  return ['', embed];
+  return {embed};
 
 }

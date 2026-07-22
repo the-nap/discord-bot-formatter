@@ -3,7 +3,7 @@ import { EmbedBuilder } from "discord.js";
 import formatNumber from "#utils/formatNumber.js";
 import { isInWar } from "#utils/skillset.js";
 
-export default async function getMuData(link, id){
+export default async function getMuData({ id }){
   const client = createAPIClient();
 
   const mu = await client.mu.getById({ muId: id })
@@ -48,10 +48,9 @@ export default async function getMuData(link, id){
 
   const embed = new EmbedBuilder()
   .setTitle(mu.name)
-  .setURL(link)
   .setThumbnail(mu.avatarUrl)
   .addFields(fields)
 
-  return ['', embed];
+  return {embed};
 
 }

@@ -18,35 +18,25 @@ export default {
     const startTime = performance.now();
     await interaction.deferReply();
     try{
-      const link = interaction.options.getString('link',true);
-      const opzioni = interaction.options.getString('opzioni');
-      const result = await formatLink(link);
-      if( result[1] && opzioni)
-        result[1].setDescription('**'+opzioni+'**')
-      switch(result.length){
-        case(1):
-          await interaction.editReply(result[0]);
-          break;
-        case(2):
-          await interaction.editReply({
-            content: result[0],
-            embeds: [result[1]]
-          });
-          break;
-        default:
-          await interaction.editReply({
-            content: result[0],
-            embeds: [result[1]],
-            files: [result[2]]
-          });
+      const result = await formatLink(interaction);
+      if(result.file){
+        interaction.editReply({
+          embeds: [result.embed],
+          files: [result.file]
+        })
+        return;
       }
-
+      interaction.editReply({
+        embeds: [result.embed]
+      })
     } catch (err) {
       console.log('Thrown error');
+      console.log(err);
       await interaction.editReply("Link non supportato");
+    } finally {
+      const endTime = performance.now();
+      console.log(`Total time: ${endTime - startTime} milliseconds\n\n`);
     }
-    const endTime = performance.now();
-    console.log(`Total call took ${endTime - startTime} milliseconds`);
   }
 };
 
@@ -59,7 +49,11 @@ const handlers = {
   'mu': getMuData,
 }
 
-async function formatLink(link){
+async function formatLink(interaction){
+
+  const link = interaction.options.getString('link', true);
+  const options = interaction.options.getString('opzioni')
+  const context = { channel: interaction.channelId, guild: interaction.guildId };
 
   const url = new URL(link);
   if(url.hostname !== 'app.warera.io')
@@ -72,10 +66,17 @@ async function formatLink(link){
 
   const id = parts[1];
   const handler = handlers[parts[0]];
-  console.log(handler);
 
   if(!handler)
-    return ['Ottima idea, ma ancora non si può fare'];
+    throw new Error('Metodo ancora non supportato');
 
-  return handler(link, id)
+  const {embed, file} = await handler({id, context});
+
+  if(options)
+    embed.setDescription(`**${options}**`);
+
+  embed.setURL(link);
+  return { embed: embed, file: file };
+
+
 }

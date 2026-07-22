@@ -38,7 +38,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if ( !interaction.isChatInputCommand()) return;
 
   const command =  interaction.client.commands.get(interaction.commandName);
-  console.log(`${interaction.user.username} called ${interaction.commandName} ${interaction.options.getString('link')} at ${new Date().toISOString()}`);
+  const timestamp = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Rome",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date());
+  console.log(`[${timestamp}] ${interaction.user.username} called ${interaction.commandName} ${interaction.options.getString('link')}`);
 
   if(!command) {
     console.error(`No command matching ${interaction.commandName} was found.`);

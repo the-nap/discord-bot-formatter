@@ -1,8 +1,10 @@
 import Canvas  from "@napi-rs/canvas";
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const [ WIDTH, HEIGHT ] = [256, 256];
 
-const emptyPath = new URL("../assets/frame.png", import.meta.url)
+const emptyPath = path.join(process.cwd(), "assets", "frame.png");
 
 export async function getEquipFormatted(equipment) {
   const canvas = Canvas.createCanvas(WIDTH*7 + 70, HEIGHT+20);
@@ -31,12 +33,14 @@ export async function getEquipFormatted(equipment) {
 
   const parsedEquipment = slots.map((item) => parseEquipment(item));
 
+  console.log()
+
   const data = await Promise.all(
     parsedEquipment.map(async parsed => ({
       tier: parsed?.tier,
       image: parsed
         ? await Canvas.loadImage(`https://app.warera.io/images/items/${parsed.name}.png`)
-        : await Canvas.loadImage(emptyPath)
+        : await Canvas.loadImage(pathToFileURL(emptyPath))
     }))
   );
 

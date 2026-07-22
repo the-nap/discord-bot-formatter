@@ -3,7 +3,7 @@ import { EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { getEquipFormatted } from "#utils/equipMaker.js";
 import { isInWar } from "#utils/skillset.js";
 
-export default async function getUserData(link, id){
+export default async function getUserData({ id }){
   const client = createAPIClient();
   
   const [user, equipment] = await Promise.all([
@@ -54,7 +54,6 @@ export default async function getUserData(link, id){
 
   const embed = new EmbedBuilder()
   .setTitle(user.username)
-  .setURL(link)
   .setThumbnail(user.avatarUrl)
   .addFields(
     { name: 'Barre', value:
@@ -66,6 +65,6 @@ export default async function getUserData(link, id){
   )
   .setImage('attachment://equip.png');
 
-  return ['', embed, file];
+  return {embed, file};
 }
 

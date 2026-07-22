@@ -1,7 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder } from "discord.js";
 
-export default async function getArticleData(link, id){
+export default async function getArticleData({ id }){
   const client = createAPIClient();
 
   const article = await client.article.getArticleById({ articleId: id });
@@ -9,9 +9,8 @@ export default async function getArticleData(link, id){
 
   const embed = new EmbedBuilder()
   .setTitle(article.title)
-  .setURL(link)
   .setThumbnail(author.avatarUrl)
   .setAuthor({ name:`${author.username}`});
 
-  return ['', embed];
+  return {embed};
 }
