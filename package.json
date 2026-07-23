@@ -4,10 +4,10 @@
   "type": "module",
   "main": "app.js",
   "imports": {
-    "#linkType/*":"./src/linkType/*",
-    "#utils/*":"./src/utils/*",
-    "#config/*":"./src/config/*",
-    "#state/*":"./src/state/*"
+    "#linkType/*": "./src/linkType/*",
+    "#utils/*": "./src/utils/*",
+    "#config/*": "./src/config/*",
+    "#state/*": "./src/state/*"
   },
   "scripts": {
     "start:dev": "cross-env NODE_ENV=dev node src/app.js",
@@ -23,6 +23,7 @@
     "cross-env": "^10.1.0",
     "d3-geo": "^3.1.1",
     "discord.js": "^14.26.5",
+    "node-cron": "^4.6.0",
     "sharp": "^0.35.3",
     "topojson-client": "^3.1.0"
   },
