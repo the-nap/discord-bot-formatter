@@ -39,16 +39,19 @@ export function buildBattleEmbed({
   if(muDamage)
     fields.push({ name:`----Danni----`, value: `${muDamage.name} ${muDamage.damage}` })
 
-  const membersDamageData = [...membersDamage.entries()]
+  const membersDamageData = membersDamage
+  ? [...membersDamage.entries()]
     .sort((a,b) => {
       return b[1] - a[1]
     })
     .map((user) => {
       return `${user[0]} - ${formatNumber(user[1])}`
     })
-    .join('\n');
+    .join('\n')
+  : null
 
-  fields.push({ name:'', value: membersDamageData })
+  if(membersDamageData)
+    fields.push({ name:'', value: membersDamageData })
 
   const embed = new EmbedBuilder()
   .setTitle(title)

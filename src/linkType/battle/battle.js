@@ -36,7 +36,9 @@ export default async function getBattleData({ id, context }){
   start = performance.now();
   let membersDamage;
   if(muId.length){
-    membersDamage = await getAllRankings(mu.members, { id: id, type: 'user', maxDamage: muDamageMap.get(muId[0]) })
+    membersDamage = await renameDamageMap(
+      await getAllRankings(mu.members, { id: id, type: 'user', maxDamage: muDamageMap.get(muId[0]) })
+    )
   }
   end = performance.now();
   console.log(`[getAllRankings(user)] Execution time: ${end- start} ms`)
@@ -47,7 +49,6 @@ export default async function getBattleData({ id, context }){
     : null;
 
   start = performance.now();
-  membersDamage = await renameDamageMap(membersDamage);
   end = performance.now();
   console.log(`[getNamingFetch] Execution time: ${end - start} ms`)
 
