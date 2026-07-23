@@ -9,6 +9,6 @@ export function startScheduler(client){
 cron.schedule(
   "0 0 * * *",
   async () => {
-    dailyReport(client, true)
+    autoReport(client);
   },
 );
