@@ -2,20 +2,20 @@ import subscriptions from '#state/subscriptions.json' with { type: 'json' };
 import { createAPIClient } from '@wareraprojects/api';
 import formatNumber from '#utils/formatNumber.js';
 import { EmbedBuilder } from 'discord.js';
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
+
 
 const client = createAPIClient();
-const dataFile = new URL("#state/mus.json", import.meta.url);
+const dataFile = new URL("../state/mus.json", import.meta.url);
 
 export async function autoReport(discordClient){
 
   for( let subscription of subscriptions ){
-    const channel = await discordClient.channels.fetch(subscription.channel)
+    const channel = discordClient.channels.cache.get(subscription.channel)
     await channel.send({
-      embeds: dailyReport(subscription.mu, true)
+      embeds: [ await generateReport(subscription.mu, true)]
     })
   }
-  await writeFile(dataFile, JSON.stringify(oldData, null, 2));
 }
 
 export async function commandReport(subscription){
@@ -29,16 +29,15 @@ async function generateReport(muId, updateData = false){
 
   const selectedMu = await client.mu.getById({ muId: muId });
 
-  const newWeekly = selectedMu.rankings.muWeeklyDamages.value;
+  const newWeekly = selectedMu.rankings?.muWeeklyDamages?.value ?? 0;
   const members = await fetchUsers(selectedMu);
   if(!oldData[muId]){
-    oldData[muId] = {
-      weeklyDamage: selectedMu.rankings.muWeeklyDamages.value,
-      yesterdayDamage: 0
-    }
+    if(updateData)
+      await addMu(oldData, selectedMu);
+    return buildFailingEmbed(selectedMu._id, selectedMu.name, selectedMu.avatarUrl);
   }
-  const todayDamage = newWeekly - oldData[muId].weeklyDamage;
-  const muChange = getDifference(oldData[muId]?.yesterdayDamage, todayDamage)
+  const todayDamage = calculateTodayDamage(newWeekly, oldData[muId].weeklyDamage);
+  const muChange = getVariation(oldData[muId]?.yesterdayDamage, todayDamage)
   const muResult = format(todayDamage, muChange);
 
   const membersData = members.map(member => {
@@ -46,7 +45,7 @@ async function generateReport(muId, updateData = false){
     if(!oldData[muId][memberId]){
       if(updateData)
         oldData[muId][memberId] = {
-          weeklyDamage: member.rankings.weeklyDamage,
+          weeklyDamage: member.rankings?.weeklyUserDamages?.value ?? 0,
           yesterdayDamage: 0
         }
       return {
@@ -54,12 +53,13 @@ async function generateReport(muId, updateData = false){
         value: null
       }
     }
-    const todayDamage = member.rankings.weeklyDamage - oldData[muId][memberId].weeklyDamage;
-    const memberChange = getDifference(oldData[muId][memberId], todayDamage);
+    const newWeekly = member.rankings?.weeklyUserDamages?.value ?? 0;
+    const todayDamage = calculateTodayDamage(newWeekly, oldData[muId][memberId].weeklyDamage);
+    const memberChange = getVariation(oldData[muId][memberId].yesterdayDamage, todayDamage);
 
     if(updateData){
-      oldData[muId][memberId].weeklyDamage = member.rankings.weeklyDamage
-      oldData[muId][memberId].yesterdayDamage = todayDamage
+      oldData[muId][memberId].weeklyDamage = newWeekly;
+      oldData[muId][memberId].yesterdayDamage = todayDamage;
     }
 
     return {
@@ -74,32 +74,52 @@ async function generateReport(muId, updateData = false){
   if(updateData){
     oldData[muId].weeklyDamage = newWeekly;
     oldData[muId].yesterdayDamage = todayDamage;
+    await writeFile(dataFile, JSON.stringify(oldData, null, 2));
   }
 
-  return [buildEmbed(selectedMu, muResult, membersData)];
-
+  return buildEmbed(selectedMu, muResult, membersData);
 }
 
-function percentDifference(A, B) {
-  return `${((A - B) / B) * 100}%`
+async function addMu(oldData, mu){
+  oldData[mu._id] = {};
+  oldData[mu._id].weeklyDamage = mu.rankings?.muWeeklyDamages?.value ?? 0,
+  oldData[mu._id].yesterdayDamage = 0;
+  const members = await fetchUsers(mu);
+  members.forEach( member => {
+    oldData[mu._id][member._id] = {};
+    oldData[mu._id][member._id].weeklyDamage = member.rankings?.weeklyUserDamages?.value ?? 0;
+    oldData[mu._id][member._id].yesterdayDamage = 0;
+  });
+  console.log(oldData);
+  await writeFile(dataFile, JSON.stringify(oldData, null, 2));
+}
+
+function calculateTodayDamage(newValue, old){
+  return (newValue >= old)
+    ? newValue - old
+    : newValue
+}
+
+function getVariation(A, B) {
+  if(A <= 0)
+    return '';
+  let result = (((B - A) / A) * 100).toFixed(2);
+  if(result > 0)
+    return `(+${result})`;
+  return `(${result})`;
 }
 
 function format(today, change){
-  return `${formatNumber(today)} (${change})`
-}
-
-function getDifference(yesterdayDamage, todayDamage){
-  return yesterdayDamage
-    ? percentDifference(todayDamage, yesterdayDamage)
-    : '(non valido)'
+  return `${formatNumber(today)} ${change}`
 }
 
 async function fetchUsers(mu){
-  return await Promise.all(
+  const users = await Promise.all(
     mu.members.map((member) =>
       client.user.getUserLite({ userId: member })
     )
-  );
+  )
+  return users.filter(user => user.isActive)
 }
 
 function buildEmbed(mu, muResult, membersData){
@@ -111,7 +131,7 @@ function buildEmbed(mu, muResult, membersData){
       return b.value.today - a.value.today;
     });
 
-  return new EmbedBuilder
+  return new EmbedBuilder()
     .setTitle(mu.name)
     .setURL(`https://app.warera.io/mu/${mu._id}`)
     .setThumbnail(mu.avatarUrl)
@@ -124,9 +144,17 @@ function buildEmbed(mu, muResult, membersData){
         name: 'Classifica Giornaliera',
         value: sortedMembers.map( member => {
           if(!member.value)
-            return `${member.user}: nessun dato  6`
+            return `${member.user}: Nessun dato`
           return `${member.user}: ${format(member.value.today, member.value.change)}`;
         }).join(`\n`)
       }
     )
+}
+
+function buildFailingEmbed(id, name, avatar){
+  return new EmbedBuilder()
+    .setTitle(name)
+    .setDescription('Il canale è iscritto, ma è necessario un giorno per raccogliere i dati')
+    .setURL(`https://app.warera.io/mu/${id}`)
+    .setThumbnail(avatar);
 }
