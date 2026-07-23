@@ -3,7 +3,7 @@ import getArticleData from '#linkType/article.js';
 import getCompanyData from '#linkType/company.js';
 import getMuData from '#linkType/mu.js';
 import getUserData from '#linkType/user.js';
-import getBattleData from '#linkType/battle.js';
+import getBattleData from '#linkType/battle/battle.js';
 import getRegionData from '#linkType/region.js';
 
 export default {
