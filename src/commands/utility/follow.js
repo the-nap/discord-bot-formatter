@@ -18,10 +18,9 @@ export default {
     await interaction.deferReply();
     try{
 
-      const guild  = interaction.guildId;
       const name = interaction.options.getString('mu');
       const channel = interaction.channelId;
-      const result = await subscribe(guild, channel, name);
+      const result = await subscribe(channel, name);
       interaction.editReply(result);
 
     } catch (err) {
@@ -33,20 +32,18 @@ export default {
   }
 }
 
-async function subscribe(guild, channel, link){
+async function subscribe(channel, link){
 
   const data = await loadData();
 
   const id = getId(link);
 
   const newObject = {
-    'guild': guild,
     'channel': channel,
     'mu': id
   };
 
   const exists = data.some(item =>
-    item.guild === guild &&
     item.channel === channel &&
     item.mu === id
   );

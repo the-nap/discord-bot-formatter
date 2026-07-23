@@ -6,7 +6,6 @@ export function getSubscribedMu(context){
   return subscriptions
     .filter(
       (item) =>
-        item.guild === context.guild &&
         item.channel === context.channel )
     .map( item => item?.mu );
 

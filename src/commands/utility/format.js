@@ -53,7 +53,7 @@ async function formatLink(interaction){
 
   const link = interaction.options.getString('link', true);
   const options = interaction.options.getString('opzioni')
-  const context = { channel: interaction.channelId, guild: interaction.guildId };
+  const context = { channel: interaction.channelId };
 
   const url = new URL(link);
   if(url.hostname !== 'app.warera.io')

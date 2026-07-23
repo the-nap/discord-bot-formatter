@@ -16,9 +16,8 @@ export default {
     await interaction.deferReply();
     try{
 
-      const guild  = interaction.guildId;
       const channel = interaction.channelId;
-      const result = await unsubscribe(guild, channel);
+      const result = await unsubscribe(channel);
       interaction.editReply(result);
 
     } catch (err) {
@@ -30,17 +29,15 @@ export default {
   }
 }
 
-async function unsubscribe(guild, channel){
+async function unsubscribe(channel){
 
   const data = await loadData();
 
   const index = data.findIndex(item =>
-    item.guild === guild &&
     item.channel === channel
   )
 
   const newArray = data.filter(item => !(
-    item.guild === guild &&
     item.channel === channel
   ))
 
