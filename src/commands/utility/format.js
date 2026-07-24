@@ -10,9 +10,8 @@ export default {
   cooldown: 3,
   data: new SlashCommandBuilder()
     .setName('format')
-    .setDescription('Formats warera links')
-    .addStringOption((option) => option.setName('link').setDescription('The link to format').setRequired(true))
-    .addStringOption((option) => option.setName('opzioni').setDescription('Messaggio aggiuntivo').setRequired(false)),
+    .setDescription('Formatta i link warera')
+    .addStringOption((option) => option.setName('opzioni').setDescription('Link + messaggio aggiuntivo').setRequired(false)),
 
   async execute(interaction) {
     const startTime = performance.now();
@@ -29,10 +28,12 @@ export default {
       interaction.editReply({
         embeds: [result.embed]
       })
+
     } catch (err) {
       console.log('Thrown error');
       console.log(err);
-      await interaction.editReply("Link non supportato");
+      await interaction.editReply(err.message);
+
     } finally {
       const endTime = performance.now();
       console.log(`Total time: ${endTime - startTime} milliseconds\n\n`);
@@ -51,17 +52,21 @@ const handlers = {
 
 async function formatLink(interaction){
 
-  const link = interaction.options.getString('link', true);
-  const options = interaction.options.getString('opzioni')
+  const input = interaction.options.getString('opzioni', true);
+
+  const [link, ...text] = input.split(" ");
+
+  text.join(" ");
+
   const context = { channel: interaction.channelId };
 
   const url = new URL(link);
   if(url.hostname !== 'app.warera.io')
-    throw new Error('Unsupported website')
+    throw new Error('Sito errato')
   const parts = url.pathname.split('/').filter(Boolean);
 
   if(!parts[1]){
-    throw new Error('Unsupported Link');
+    throw new Error('Link malformato');
   }
 
   const id = parts[1];
@@ -70,13 +75,12 @@ async function formatLink(interaction){
   if(!handler)
     throw new Error('Metodo ancora non supportato');
 
-  const {embed, file} = await handler({id, context});
+  const result = await handler({id, context});
 
-  if(options)
-    embed.setDescription(`**${options}**`);
+  result.embed.setURL(link);
 
-  embed.setURL(link);
-  return { embed: embed, file: file };
+  if(text)
+    result.embed.setDescription(`**${text}**`);
 
-
+  return result;
 }
