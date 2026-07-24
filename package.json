@@ -7,12 +7,13 @@
     "#linkType/*": "./src/linkType/*",
     "#utils/*": "./src/utils/*",
     "#config/*": "./src/config/*",
-    "#state/*": "./src/state/*"
+    "#state/*": "./src/state/*",
+    "#tests/*":"./tests/*"
   },
   "scripts": {
     "start:dev": "cross-env NODE_ENV=dev node src/app.js",
     "start:prod": "cross-env NODE_ENV=prod node src/app.js",
-    "test": "vitest"
+    "test": "vitest --coverage"
   },
   "author": "the-nap",
   "license": "ISC",
@@ -28,6 +29,7 @@
     "topojson-client": "^3.1.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
     "vitest": "^4.1.10"
   }
 }

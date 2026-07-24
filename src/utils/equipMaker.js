@@ -1,4 +1,4 @@
-import Canvas  from "@napi-rs/canvas";
+import Canvas from "@napi-rs/canvas";
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
