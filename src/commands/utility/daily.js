@@ -9,25 +9,13 @@ export default {
   .setDescription('Ottieni info giornaliere sul danno'),
 
   async execute(interaction) {
-    const startTime = performance.now();
     await interaction.deferReply();
-    try{
 
-      const result = await getReport(interaction);
+    const result = await getReport(interaction);
 
-      interaction.editReply({
-        embeds: [result]
-      });
-
-    }catch(err){
-      console.log('Error\n');
-      console.log(err);
-      interaction.editReply({
-        content: err.message
-      })
-    }
-      const endTime = performance.now();
-      console.log(`Total call took ${endTime - startTime} milliseconds`);
+    interaction.editReply({
+      embeds: [result]
+    });
   }
 }
 

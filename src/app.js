@@ -64,17 +64,23 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   try {
+    const startTime = performance.now();
+
     await command.execute(interaction);
+
+    const endTime = performance.now();
+    console.log(`[Time] ${endTime - startTime} milliseconds`);
+
   } catch (error) {
     console.error(error);
     if ( interaction.replied || interaction.deferred ) {
       await interaction.followUp({
-        content: 'There was an error in executing this command',
+        content: error.message,
         flags: MessageFlags.Ephemeral,
       });
     } else {
       await interaction.reply({
-        content: 'There was an error in executing this command',
+        content: error.message,
         flags: MessageFlags.Ephemeral,
       })
     }

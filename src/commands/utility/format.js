@@ -14,32 +14,19 @@ export default {
     .addStringOption((option) => option.setName('opzioni').setDescription('Link + messaggio aggiuntivo').setRequired(false)),
 
   async execute(interaction) {
-    const startTime = performance.now();
     await interaction.deferReply();
-    try{
-      const result = await formatLink(interaction);
+    const result = await formatLink(interaction);
 
+    await interaction.editReply({
+      embeds: [result.embed],
+      files: [result.file]
+    });
+
+    if(result.update){
+      const updatedEmbed = await result.update();
       await interaction.editReply({
-        embeds: [result.embed],
-        files: [result.file]
+        embeds: [updatedEmbed.embed],
       });
-
-      if(result.update){
-        const updatedEmbed = await result.update();
-
-        await interaction.editReply({
-          embeds: [updatedEmbed.embed],
-        });
-      }
-
-    } catch (err) {
-      console.log('Thrown error');
-      console.log(err);
-      await interaction.editReply(err.message);
-
-    } finally {
-      const endTime = performance.now();
-      console.log(`Total time: ${endTime - startTime} milliseconds\n\n`);
     }
   }
 };
@@ -57,9 +44,9 @@ async function formatLink(interaction){
 
   const input = interaction.options.getString('opzioni', true);
 
-  const [link, ...text] = input.split(" ");
+  const [link, ...textParts] = input.split(" ");
 
-  text.join(" ");
+  const text = textParts.join(" ");
 
   const context = { channel: interaction.channelId };
 

@@ -12,20 +12,11 @@ export default {
   .setDescription('Se in un canale si segue una mu, si smette di farlo'),
 
   async execute(interaction) {
-    const startTime = performance.now();
     await interaction.deferReply();
-    try{
+    const channel = interaction.channelId;
 
-      const channel = interaction.channelId;
-      const result = await unsubscribe(channel);
-      interaction.editReply(result);
-
-    } catch (err) {
-      console.log(err);
-      await interaction.editReply('Qualcosa è andato storto, ma il comando è andato a buon fine' );
-    }
-    const endTime = performance.now();
-    console.log(`Total call took ${endTime - startTime} milliseconds`);
+    const result = await unsubscribe(channel);
+    interaction.editReply(result);
   }
 }
 

@@ -1,6 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
 import { createAPIClient } from "@wareraprojects/api";
-import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getSubscriptions, saveSubscriptions } from "#utils/subscriptionsHandler.js";
 
@@ -15,21 +14,13 @@ export default {
   .addStringOption((option) => option.setName('mu').setDescription('Il link alla mu da seguire').setRequired(true)),
 
   async execute(interaction) {
-    const startTime = performance.now();
     await interaction.deferReply();
-    try{
+    const name = interaction.options.getString('mu');
+    const channel = interaction.channelId;
 
-      const name = interaction.options.getString('mu');
-      const channel = interaction.channelId;
-      const result = await subscribe(channel, name);
-      interaction.editReply(result);
+    const result = await subscribe(channel, name);
+    interaction.editReply(result);
 
-    } catch (err) {
-      console.log(err);
-      await interaction.editReply(err.message);
-    }
-    const endTime = performance.now();
-    console.log(`Total call took ${endTime - startTime} milliseconds`);
   }
 }
 
