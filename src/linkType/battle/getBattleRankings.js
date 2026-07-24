@@ -8,7 +8,6 @@ export async function getAllRankings(toSearch, rankingData){
   if(rankingData.maxDamage)
     max = rankingData.maxDamage;
 
-
   const toSearchIds = new Set(toSearch);
   let cursor;
   let damageCounter = 0;
@@ -16,7 +15,7 @@ export async function getAllRankings(toSearch, rankingData){
   let matching = new Map();
 
   while(true) {
-    const response = await client.battleRanking.getRanking({ 'battleId': rankingData.id, 'type': rankingData.type, 'side': 'merged', 'dataType': 'damage', 'cursor': cursor });
+    const response = await client.battleRanking.getRanking({ 'battleId': rankingData.battleId, 'type': rankingData.type, 'side': 'merged', 'dataType': 'damage', 'cursor': cursor });
     for( let item of response.items ){
       if(damageCounter === max)
         return matching;

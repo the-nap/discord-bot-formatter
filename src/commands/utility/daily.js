@@ -26,7 +26,7 @@ async function getReport(interaction){
   const subscription = subscriptions.find(item => item.channel === channel)
   
   if(!subscription)
-    throw new Error('Non sei iscritto a nessun canale')
+    throw new Error('Non sei iscritto a nessuna mu. Usa /follow');
 
   return await commandReport(subscription);
 }

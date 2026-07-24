@@ -1,8 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
-import { getAllRankings } from "./getBattleRankings";
+import { getAllRankings } from "./getBattleRankings.js";
 
 const client = createAPIClient();
-
 
 export function buildPromises(muId, battleId){
   const promises = [
@@ -15,6 +14,7 @@ export function buildPromises(muId, battleId){
       client.mu.getById({ muId: muId }),
       getAllRankings([muId], { battleId: battleId, type: 'mu' })
     );
+
   return promises;
 }
 

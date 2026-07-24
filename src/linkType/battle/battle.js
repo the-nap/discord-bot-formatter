@@ -1,16 +1,14 @@
-import { createAPIClient } from "@wareraprojects/api";
 import formatNumber from "#utils/formatNumber.js";
 import { getSubscribedMu } from "./getSubscribedMus.js";
 import { getAllRankings } from "./getBattleRankings.js";
 import { renameDamageMap } from "./getMemberDamage.js";
-import { getBattleParticipants } from "./getBattleParticipants.js";
+import { buildPromises, getBattleParticipants } from "./getBattleParticipants.js";
 import { getBattleMap } from "./getBattleMap.js";
 import { buildBattleEmbed } from "./buildBattleEmbed.js";
 
-const client = createAPIClient();
+export default async function getBattleData({ id , context }) {
 
-export default async function getBattleData({ battleId, context }) {
-
+  const battleId = id;
   const muId = await getSubscribedMu(context);
 
   const promises = buildPromises(muId, battleId);
@@ -26,7 +24,7 @@ export default async function getBattleData({ battleId, context }) {
 
   const rankingPromise = muId && muDamageMap.size
     ? getAllRankings(mu.members, {
-        id,
+        battleId,
         type: 'user',
         maxDamage: muDamageMap.get(muId)
       })

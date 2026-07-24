@@ -11,7 +11,7 @@ export default {
   data: new SlashCommandBuilder()
     .setName('format')
     .setDescription('Formatta i link warera')
-    .addStringOption((option) => option.setName('opzioni').setDescription('Link + messaggio aggiuntivo').setRequired(false)),
+    .addStringOption((option) => option.setName('opzioni').setDescription('Link + messaggio aggiuntivo').setRequired(true)),
 
   async execute(interaction) {
     await interaction.deferReply();
@@ -19,7 +19,7 @@ export default {
 
     await interaction.editReply({
       embeds: [result.embed],
-      files: [result.file]
+      files: result.file ? [result.file] : []
     });
 
     if(result.update){

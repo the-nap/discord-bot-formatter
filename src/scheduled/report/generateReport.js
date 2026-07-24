@@ -1,5 +1,5 @@
 import { fetchActiveMembers, fetchMu } from "./api.js";
-import { processMember, sorter, processMu, removeOldMembers } from "./dataHandling.js";
+import { processMember, sorter, processMu, removeOldMembers, initializeMu } from "./dataHandling.js";
 import { buildEmbed, buildMissingEmbed } from "./embeds.js";
 import { loadData, saveData } from "./storage.js";
 
