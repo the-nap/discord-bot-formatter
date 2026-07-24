@@ -1,5 +1,5 @@
 import { fetchActiveMembers, fetchMu } from "./api.js";
-import { processMember, sorter, processMu } from "./dataHandling.js";
+import { processMember, sorter, processMu, removeOldMembers } from "./dataHandling.js";
 import { buildEmbed, buildMissingEmbed } from "./embeds.js";
 import { loadData, saveData } from "./storage.js";
 
@@ -18,6 +18,8 @@ import { loadData, saveData } from "./storage.js";
       }
       return buildMissingEmbed(mu);
     }
+
+    removeOldMembers(data[muId], members);
 
     const muReport = await processMu(data[muId], mu);
 
