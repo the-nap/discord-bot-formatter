@@ -45,7 +45,14 @@ export function createMockAPI(){
       getById: vi.fn(async ({ regionId }) =>
         regions[regionId]
       )
-    }
+    },
+
+    workOffer: {
+      getWorkOfferByCompanyId: vi.fn(async ({ companyId }) =>
+        []
+      )
+    },
+
   }
 }
 
