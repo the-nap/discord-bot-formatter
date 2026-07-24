@@ -44,12 +44,11 @@ async function subscribe(channel, link){
   };
 
   const exists = data.some(item =>
-    item.channel === channel &&
-    item.mu === id
+    item.channel === channel
   );
 
   if(exists) {
-    return 'Stai già seguendo questa mu';
+    return 'Stai già seguendo una mu';
   }
 
   const mu = await fetchMu(id);
