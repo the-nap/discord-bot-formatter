@@ -33,8 +33,6 @@ export async function getEquipFormatted(equipment) {
 
   const parsedEquipment = slots.map((item) => parseEquipment(item));
 
-  console.log()
-
   const data = await Promise.all(
     parsedEquipment.map(async parsed => ({
       tier: parsed?.tier,

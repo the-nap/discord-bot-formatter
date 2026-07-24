@@ -1,7 +1,8 @@
-import subscriptions from '#state/subscriptions.json' with { type: 'json' };
+import { getSubscriptions } from '#utils/subscriptionsHandler.js';
 import { generateReport } from './report/generateReport.js';
 
 export async function autoReport(discordClient){
+  const subscriptions = getSubscriptions();
 
   for( let subscription of subscriptions ){
     const channel = discordClient.channels.cache.get(subscription.channel)

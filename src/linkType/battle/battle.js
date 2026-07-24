@@ -9,17 +9,15 @@ import { buildBattleEmbed } from "./buildBattleEmbed.js";
 
 const client = createAPIClient();
 
-export default async function getBattleData({ id, context }){
+export default async function getBattleData({ id, context }) {
 
-  let start = performance.now();
-  const muId = getSubscribedMu(context);
-  let end = performance.now();
-  console.log(`[getSubscribedMu] Execution time: ${end- start} ms`)
+  const muId = await getSubscribedMu(context);
 
   const promises = [
     client.battle.getById({ battleId: id }),
     client.battle.getLiveBattleData({ battleId: id })
-  ]
+  ];
+
   if(muId)
     promises.push(
       client.mu.getById({ muId: muId }),

@@ -1,6 +1,7 @@
-import subscriptions from '#state/subscriptions.json' with { type: 'json' }
+import { getSubscriptions } from "#utils/subscriptionsHandler.js";
 
-export function getSubscribedMu(context){
+export async function getSubscribedMu(context){
+  const subscriptions = await getSubscriptions();
 
   return subscriptions
     .find((item) =>

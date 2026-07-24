@@ -18,6 +18,5 @@ export function getVariation(oldValue, newValue) {
 
 export function formatDamage(today, variation) {
   const result = `${formatNumber(today)} ${variation}`;
-  console.log(result);
   return result;
 }

@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from "discord.js";
 import { createAPIClient } from "@wareraprojects/api";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { getSubscriptions, saveSubscriptions } from "#utils/subscriptionsHandler.js";
 
 const client = createAPIClient();
 const file = path.join(process.cwd(), "src", "state", "subscriptions.json");
@@ -34,7 +35,9 @@ export default {
 
 async function subscribe(channel, link){
 
-  const data = await loadData();
+  const subscriptions = await getSubscriptions();
+
+  console.log(subscriptions);
 
   const id = getId(link);
 
@@ -43,7 +46,7 @@ async function subscribe(channel, link){
     'mu': id
   };
 
-  const exists = data.some(item =>
+  const exists = subscriptions.some(item =>
     item.channel === channel
   );
 
@@ -53,23 +56,8 @@ async function subscribe(channel, link){
 
   const mu = await fetchMu(id);
 
-  writeNewObject(newObject, data);
+  writeNewObject(newObject, subscriptions);
   return `Stai ora seguendo ${mu.name}`;
-}
-
-async function loadData(){
-
-  let data;
-  try{
-    data = JSON.parse(await readFile(file, "utf8"));
-  } catch(err) {
-    console.log(err)
-    throw new Error('Error while reading state');
-  }
-
-  if(!data)
-    throw new Error('Error in the state file');
-  return data;
 }
 
 function getId(link){
@@ -96,7 +84,7 @@ function getId(link){
 
 async function writeNewObject(newObject, data){
   data.push(newObject);
-  await writeFile(file, JSON.stringify(data, null, 2), 'utf8');
+  await saveSubscriptions(data)
 }
 
 async function fetchMu(id){

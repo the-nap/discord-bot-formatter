@@ -3,7 +3,6 @@ import { formatDamage } from "./calculations.js";
 
 export function buildEmbed(mu, muReport, membersReport){
 
-  console.log(muReport);
   return new EmbedBuilder()
     .setTitle(mu.name)
     .setURL(`https://app.warera.io/mu/${mu._id}`)
@@ -20,12 +19,12 @@ export function buildEmbed(mu, muReport, membersReport){
     )
 }
 
-export function buildMissingEmbed(id, name, avatar){
+export function buildMissingEmbed(mu){
   return new EmbedBuilder()
-    .setTitle(name)
+    .setTitle(mu.name)
     .setDescription('Il canale è iscritto, ma è necessario un giorno per raccogliere i dati')
-    .setURL(`https://app.warera.io/mu/${id}`)
-    .setThumbnail(avatar);
+    .setURL(`https://app.warera.io/mu/${mu._id}`)
+    .setThumbnail(mu.avatar);
 }
 
 function usersToString(users, formatter){

@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "discord.js";
 import { commandReport } from "../../scheduled/dailyReport.js";
-import subscriptions from '#state/subscriptions.json' with { type:'json' };
+import { getSubscriptions } from "#utils/subscriptionsHandler.js";
 
 export default {
   cooldown: 3,
@@ -22,6 +22,9 @@ export default {
     }catch(err){
       console.log('Error\n');
       console.log(err);
+      interaction.editReply({
+        content: err.message
+      })
     }
       const endTime = performance.now();
       console.log(`Total call took ${endTime - startTime} milliseconds`);
@@ -31,6 +34,7 @@ export default {
 async function getReport(interaction){
 
   const channel = interaction.channelId;
+  const subscriptions = await getSubscriptions();
   const subscription = subscriptions.find(item => item.channel === channel)
   
   if(!subscription)
