@@ -9,58 +9,60 @@ import { buildBattleEmbed } from "./buildBattleEmbed.js";
 
 const client = createAPIClient();
 
-export default async function getBattleData({ id, context }) {
+export default async function getBattleData({ battleId, context }) {
 
   const muId = await getSubscribedMu(context);
 
-  const promises = [
-    client.battle.getById({ battleId: id }),
-    client.battle.getLiveBattleData({ battleId: id })
-  ];
+  const promises = buildPromises(muId, battleId);
 
-  if(muId)
-    promises.push(
-      client.mu.getById({ muId: muId }),
-      getAllRankings([muId], { id: id, type: 'mu' }),
-    );
-  
-  const [battle, battleDetails, mu, muDamageMap] = await Promise.all( promises );
+  const [battle, battleDetails, mu, muDamageMap] = await Promise.all(promises);
+
+  const muDamage = muDamageMap?.get(muId)
+    ? {
+        name: mu.name,
+        damage: formatNumber(muDamageMap.get(muId))
+      }
+    : null;
 
   const rankingPromise = muId && muDamageMap.size
-    ? getAllRankings(mu.members, { id: id, type: 'user', maxDamage: muDamageMap.get(muId) })
+    ? getAllRankings(mu.members, {
+        id,
+        type: 'user',
+        maxDamage: muDamageMap.get(muId)
+      })
     : null;
 
-  const participantsPromise = getBattleParticipants(battle);
-  const mapPromise = getBattleMap(battle);
-
-  const muDamage = muDamageMap.get(muId)
-    ? { name: mu.name, damage: formatNumber(muDamageMap.get(muId)) }
-    : null;
-
-  const[data, file] = await Promise.all([
-    participantsPromise,
-    mapPromise
+  const [data, file] = await Promise.all([
+    getBattleParticipants(battle),
+    getBattleMap(battle)
   ]);
 
-  start = performance.now();
-
-  const rankings = rankingPromise
-    ? await rankingPromise
-    : null;
-
-  const membersDamage = rankings
-    ? await renameDamageMap(rankings)
-    : undefined;
-
-  end = performance.now();
-  console.log(`[getAllRankings(user)] Execution time: ${end- start} ms`)
-
-  return  buildBattleEmbed({
+  const initial = buildBattleEmbed({
     battle,
     battleDetails,
-    membersDamage,
+    membersDamage: undefined,
     muDamage,
     file,
     data
   });
+
+  if (!rankingPromise)
+    return initial;
+
+  return {
+    ...initial,
+    update: async () => {
+      const rankings = await rankingPromise;
+      const membersDamage = await renameDamageMap(rankings);
+
+      return buildBattleEmbed({
+        battle,
+        battleDetails,
+        membersDamage,
+        muDamage,
+        file,
+        data
+      });
+    }
+  };
 }

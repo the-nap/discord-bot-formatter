@@ -37,8 +37,6 @@ async function subscribe(channel, link){
 
   const subscriptions = await getSubscriptions();
 
-  console.log(subscriptions);
-
   const id = getId(link);
 
   const newObject = {

@@ -58,6 +58,7 @@ export function buildBattleEmbed({
   .addFields(
     fields
   )
+
   if(file){
     embed.setImage("attachment://region.png");
     return {embed, file};

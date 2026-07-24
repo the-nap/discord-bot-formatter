@@ -18,16 +18,19 @@ export default {
     await interaction.deferReply();
     try{
       const result = await formatLink(interaction);
-      if(result.file){
-        interaction.editReply({
-          embeds: [result.embed],
-          files: [result.file]
-        })
-        return;
+
+      await interaction.editReply({
+        embeds: [result.embed],
+        files: [result.file]
+      });
+
+      if(result.update){
+        const updatedEmbed = await result.update();
+
+        await interaction.editReply({
+          embeds: [updatedEmbed.embed],
+        });
       }
-      interaction.editReply({
-        embeds: [result.embed]
-      })
 
     } catch (err) {
       console.log('Thrown error');
