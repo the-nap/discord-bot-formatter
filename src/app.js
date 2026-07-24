@@ -50,7 +50,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
     second: "2-digit",
     hour12: false,
   }).format(new Date());
-  console.log(`[${timestamp}] ${interaction.user.username} called ${interaction.commandName} ${interaction.options.getString('link')}`);
+
+  console.log(
+    `[${timestamp}] ${interaction.user.username} called /${interaction.commandName}`,
+    interaction.options.data.length != 0
+    ? interaction.options.data
+    : ''
+  );
 
   if(!command) {
     console.error(`No command matching ${interaction.commandName} was found.`);
