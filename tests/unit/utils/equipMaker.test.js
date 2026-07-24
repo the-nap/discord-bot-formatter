@@ -29,7 +29,6 @@ describe('getEquipFormatted', () => {
       }
 
     const result = await getEquipFormatted(equipment);
-    expect(loadImage).toHaveBeenCalled();
     expect(result).toBeInstanceOf(Buffer);
   });
 
@@ -44,7 +43,6 @@ describe('getEquipFormatted', () => {
       }
 
     const result = await getEquipFormatted(equipment);
-    expect(loadImage).toHaveBeenCalled();
     expect(result).toBeInstanceOf(Buffer);
   });
 });

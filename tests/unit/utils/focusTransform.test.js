@@ -4,6 +4,7 @@ import computeFocusTransform from "#utils/focusTransform";
 const [ WIDTH, HEIGHT ] = [500, 300];
 
 describe("computeFocusTransform", () => {
+
   it("computes the center of one region", () => {
     const bounds = {
       1: [[0, 0], [100, 100]],
