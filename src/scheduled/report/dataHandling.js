@@ -21,11 +21,15 @@ export async function initializeMember(member, muData){
 
 }
 
-export async function processMu(muData, mu){
+export async function processMu(muData, mu, update){
 
   const weekly = mu.rankings?.muWeeklyDamages?.value ?? 0;
   const today = calculateTodayDamage(weekly, muData.weeklyDamage);
   const variation = getVariation(muData.yesterdayDamage, today);
+
+  if(update){
+    updateData(muData, weekly, today);
+  }
 
   return `${formatDamage(today, variation)}`
 }
@@ -41,6 +45,10 @@ export async function processMember(member, muData, update){
   const weekly = member.rankings?.weeklyUserDamages?.value ?? 0;
   const today = calculateTodayDamage(weekly, muData[id].weeklyDamage);
   const variation = getVariation(muData[id].yesterdayDamage, today)
+
+  if(update){
+    updateData(muData[id], weekly, today);
+  }
 
   return {
     name: member.username,
@@ -60,9 +68,15 @@ export function removeOldMembers(muData, members){
     .forEach(user => delete muData[user]);
 }
 
+function updateData(data, weekly, daily){
+    data.weeklyDamage = weekly;
+    data.yesterdayDamage = daily;
+}
+
 export const sorter = ((a,b) => {
   if(a === b) return 0;
   if(!a.value) return 1;
   if(!b.value) return -1;
   return b.value.today - a.value.today;
 })
+

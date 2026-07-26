@@ -8,8 +8,11 @@ export function startScheduler(client){
 }
 
 cron.schedule(
-  "0 0 * * *",
+  "1 0 * * *",
   async () => {
     autoReport(discordClient);
   },
+  {
+    timezone: "Europe/Rome",
+  }
 );

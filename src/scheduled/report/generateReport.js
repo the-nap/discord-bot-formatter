@@ -21,7 +21,7 @@ import { loadData, saveData } from "./storage.js";
 
     removeOldMembers(data[muId], members);
 
-    const muReport = await processMu(data[muId], mu);
+    const muReport = await processMu(data[muId], mu, update);
 
     const membersReport = (await Promise.all(members.map(member => 
       processMember(member, data[muId], update)

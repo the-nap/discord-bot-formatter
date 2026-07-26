@@ -11,7 +11,7 @@ export function getVariation(oldValue, newValue) {
 
   const percentage = (((newValue - oldValue) / oldValue) * 100).toFixed(2);
 
-  return percentage > 0
+  return percentage >= 0
     ? `(+${percentage}%)`
     : `(${percentage}%)`;
 }
