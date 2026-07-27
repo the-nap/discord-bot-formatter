@@ -7,9 +7,11 @@ export function calculateTodayDamage(current, previous) {
 }
 
 export function getVariation(oldValue, newValue) {
-  if (oldValue <= 0) return "";
+  if (!oldValue) return "";
 
   const percentage = (((newValue - oldValue) / oldValue) * 100).toFixed(2);
+  if(percentage > 1000 || percentage < -1000)
+    return "";
 
   return percentage >= 0
     ? `(+${percentage}%)`

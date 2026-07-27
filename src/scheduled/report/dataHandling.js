@@ -1,6 +1,6 @@
 import { calculateTodayDamage, formatDamage, getVariation } from "./calculations.js";
 
-export async function initializeMu(data, mu, members){
+export function initializeMu(data, mu, members){
 
   data[mu._id] = {};
   data[mu._id].weeklyDamage = mu.rankings?.muWeeklyDamages?.value ?? 0,
@@ -13,7 +13,7 @@ export async function initializeMu(data, mu, members){
   });
 }
 
-export async function initializeMember(member, muData){
+export function initializeMember(member, muData){
 
   muData[member._id] = {};
   muData[member._id].weeklyDamage = member.rankings?.weeklyUserDamages?.value ?? 0;
@@ -21,7 +21,7 @@ export async function initializeMember(member, muData){
 
 }
 
-export async function processMu(muData, mu, update){
+export function processMu(muData, mu, update){
 
   const weekly = mu.rankings?.muWeeklyDamages?.value ?? 0;
   const today = calculateTodayDamage(weekly, muData.weeklyDamage);
@@ -34,17 +34,18 @@ export async function processMu(muData, mu, update){
   return `${formatDamage(today, variation)}`
 }
 
-export async function processMember(member, muData, update){
+export function processMember(member, muData, update){
   const id = member._id;
 
   if(!muData[id]){
-    if(update)
+    if(update){
       initializeMember(member, muData);
+    }
   }
 
   const weekly = member.rankings?.weeklyUserDamages?.value ?? 0;
-  const today = calculateTodayDamage(weekly, muData[id].weeklyDamage);
-  const variation = getVariation(muData[id].yesterdayDamage, today)
+  const today = calculateTodayDamage(weekly, muData[id]?.weeklyDamage);
+  const variation = getVariation(muData[id]?.yesterdayDamage, today)
 
   if(update){
     updateData(muData[id], weekly, today);

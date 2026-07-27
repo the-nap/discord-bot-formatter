@@ -13,7 +13,7 @@ import { loadData, saveData } from "./storage.js";
 
     if(!data[muId]) {
       if(update){
-        await initializeMu(data, mu, members)
+        initializeMu(data, mu, members)
         await saveData(data);
       }
       return buildMissingEmbed(mu);
@@ -21,7 +21,7 @@ import { loadData, saveData } from "./storage.js";
 
     removeOldMembers(data[muId], members);
 
-    const muReport = await processMu(data[muId], mu, update);
+    const muReport = processMu(data[muId], mu, update);
 
     const membersReport = (await Promise.all(members.map(member => 
       processMember(member, data[muId], update)
