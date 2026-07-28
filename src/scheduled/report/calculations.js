@@ -12,10 +12,13 @@ export function getVariation(oldValue, newValue) {
   const percentage = (((newValue - oldValue) / oldValue) * 100).toFixed(2);
   if(percentage > 1000 || percentage < -1000)
     return "";
-
-  return percentage >= 0
-    ? `(+${percentage}%)`
-    : `(${percentage}%)`;
+  if(percentage > 0)
+    return `🟢 +${percentage}%`;
+  if(percentage <= 0 && percentage >= -20)
+    return `🟡 ${percentage}%`;
+  if(percentage < -20 && percentage >= -50)
+    return `🟠 ${percentage}%`;
+  return `🔴 ${percentage}%`;
 }
 
 export function formatDamage(today, variation) {

@@ -1,4 +1,4 @@
-import { calculateTodayDamage, formatDamage, getVariation } from "./calculations.js";
+import { calculateTodayDamage, getVariation } from "./calculations.js";
 
 export function initializeMu(data, mu, members){
 
@@ -31,7 +31,11 @@ export function processMu(muData, mu, update){
     updateData(muData, weekly, today);
   }
 
-  return `${formatDamage(today, variation)}`
+  return {
+    name: mu.name,
+    today: today,
+    variation: variation,
+  }
 }
 
 export function processMember(member, muData, update){
