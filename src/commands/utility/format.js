@@ -23,7 +23,7 @@ export default {
     });
 
     if(result.update){
-      const updatedEmbed = await result.update();
+      const updatedEmbed = await result.update(result);
       await interaction.editReply({
         embeds: [updatedEmbed.embed],
       });
@@ -66,7 +66,7 @@ async function formatLink(interaction){
     throw new Error('Metodo ancora non supportato');
 
   const result = await handler({id, context});
-
+  
   result.embed.setURL(link);
 
   if(text)

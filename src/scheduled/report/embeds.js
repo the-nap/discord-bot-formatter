@@ -10,17 +10,17 @@ export function buildEmbed(mu, muReport, membersReport){
     .setThumbnail(mu.avatarUrl)
     .addFields(
       { 
-        name: 'Danni',
+        name: '💥 Danni',
         value: valueFormatter([muReport], m => formatNumber(m.today)),
         inline: true
       },
       {
-        name: 'Variazione',
+        name: '📊 Variazione',
         value: valueFormatter([muReport], m => m.variation),
         inline: true
       },
       {
-        name: 'Rank',
+        name: '🏆 Rank',
         value: `${muReport.rank}  (${muReport.rankVariation})`,
         inline: true
       },
@@ -28,17 +28,17 @@ export function buildEmbed(mu, muReport, membersReport){
       { name: '\u200b', value: '\u200b', inline: false},
 
       {
-        name: 'Player',
+        name: '👤 Player',
         value: valueFormatter(membersReport, m => m.name),
         inline: true
       },
       {
-        name: 'Danni',
+        name: '💥 Danni',
         value: valueFormatter(membersReport, m => formatNumber(m.today)),
         inline: true
       },
       {
-        name: 'Variazione',
+        name: '📊 Variazione',
         value: valueFormatter(membersReport, m => m.variation),
         inline: true
       }

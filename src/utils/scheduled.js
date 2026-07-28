@@ -8,7 +8,7 @@ export function startScheduler(client){
 }
 
 cron.schedule(
-  "1 0 * * *",
+  "4 0 * * *",
   async () => {
     autoReport(discordClient);
   },

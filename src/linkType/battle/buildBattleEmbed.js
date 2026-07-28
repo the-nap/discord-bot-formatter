@@ -22,7 +22,7 @@ export function buildBattleEmbed({
   const icon = battle.type === "resistance" ? "✊" : "⚔️";
   
   const points =
-    `${left} 🛡️  ${battle.defender.wonRoundsCount} - ${battle.attacker.wonRoundsCount}  ${icon} ${right}`;
+    `${left} 🛡️  ${battle.defender.wonRoundsCount} : ${battle.attacker.wonRoundsCount}  ${icon} ${right}`;
 
   const title = battle.type === "tournament"
     ? `Turno ${battle.tournamentRoundNumber}`
@@ -30,7 +30,7 @@ export function buildBattleEmbed({
 
   const round = !battle.isActive
     ? "La battaglia è terminata"
-    : `Round ${battleDetails.battle.roundIds.length} in corso`;
+    : `⚔️ LIVE • Round ${battleDetails.battle.roundIds.length}`;
 
   const fields = [
     { name: '', value: points },
@@ -46,12 +46,12 @@ export function buildBattleEmbed({
       inline: true
     },
     {
-      name: `Danni`,
+      name: `💥 Danni`,
       value: `${formatNumber(muData.damage)}`,
       inline: true
     },
     {
-      name: 'Rank',
+      name: '🏆 Rank',
       value: `${muData.rank}`,
       inline: true
     },
@@ -61,17 +61,17 @@ export function buildBattleEmbed({
   if(rankings){
     const sortedMembers = Object.values(rankings).sort(sorter('damage'));
     fields.push({
-      name: 'Player',
+      name: '👤 Player',
       value: valueFormatter(sortedMembers, m => m.name),
       inline: true
     },
     {
-      name: 'Danni',
+      name: '💥 Danni',
       value: valueFormatter(sortedMembers, m => formatNumber(m.damage)),
       inline: true
     },
     {
-      name: 'Rank',
+      name: '🏆 Rank',
       value: valueFormatter(sortedMembers, m => m.rank),
       inline: true
     })
