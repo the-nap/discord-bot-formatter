@@ -83,10 +83,3 @@ function updateData(data, weekly, daily, rank){
     data.yesterdayRank = rank;
 }
 
-export const sorter = ((a,b) => {
-  if(a === b) return 0;
-  if(!a.today) return 1;
-  if(!b.today) return -1;
-  return b.today - a.today;
-})
-

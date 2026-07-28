@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import formatNumber from "#utils/formatNumber.js";
+import { valueFormatter } from "#utils/formatter.js";
 
 export function buildEmbed(mu, muReport, membersReport){
 
@@ -50,18 +51,4 @@ export function buildMissingEmbed(mu){
     .setDescription('Il canale è iscritto, ma è necessario un giorno per raccogliere i dati')
     .setURL(`https://app.warera.io/mu/${mu._id}`)
     .setThumbnail(mu.avatar);
-}
-
-function valueFormatter(list, getter){
-  return list
-    .map(getter)
-    .join(`\n`);
-}
-
-function usersToString(users, formatter){
-  return users.map(member => {
-    if(!member.value)
-      return `${member.name}: Nessun dato`;
-    return `${member.name}: ${formatter(member.value.today, member.value.variation)}`;
-  }).join(`\n`);
 }

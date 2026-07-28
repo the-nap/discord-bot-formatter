@@ -1,5 +1,6 @@
+import { sorter } from "#utils/formatter.js";
 import { fetchActiveMembers, fetchMu } from "./api.js";
-import { processMember, sorter, processMu, removeOldMembers, initializeMu } from "./dataHandling.js";
+import { processMember, processMu, removeOldMembers, initializeMu } from "./dataHandling.js";
 import { buildEmbed, buildMissingEmbed } from "./embeds.js";
 import { loadData, saveData } from "./storage.js";
 
@@ -25,7 +26,7 @@ import { loadData, saveData } from "./storage.js";
 
     const membersReport = (await Promise.all(members.map(member => 
       processMember(member, data[muId], update)
-    ))).sort(sorter);
+    ))).sort(sorter("today"));
 
     if(update)
       saveData(data);
