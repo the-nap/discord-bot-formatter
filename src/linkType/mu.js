@@ -18,22 +18,21 @@ export default async function getMuData({ id }){
 
   muMembers = muMembers.filter( user => user.isActive );
 
-  const inWar = 
-    muMembers.filter( user => isInWar(user.skills) ).length;
-
   const users =  muMembers
     .map( user => createUserObject(user) )
     .sort(sorter('damage'));
 
+  const inWar = users.filter( user => user.skills.endsWith("War"));
+  const inEco = users.filter( user => user.skills.endsWith("Eco"));
+  const hybrid = users.filter( user => user.skills.endsWith("Ibrido"));
 
   const fields = [
     {
       name: '',
-      value: `
-        Danni Settimanali: ${ formatNumber(mu.rankings.muWeeklyDamages.value) }
-        Players in war: ${ inWar } / ${ muMembers.length }
-        Danno medio per war player: ${ formatNumber(mu.rankings.muWeeklyDamages.value / inWar) }
-      `
+      value: [
+        `Danni Settimanali: ${ formatNumber(mu.rankings.muWeeklyDamages.value) }`,
+        `Players war / eco / ibridi: ${ inWar.length } / ${ inEco.length } / ${ hybrid.length }`
+      ].join("\n")
     },
     {
       name: '👤 Player',
