@@ -40,10 +40,10 @@ export default async function getBattleData({ id , context }) {
 
   return {
     ...initial,
-    update: async () => {
+    update: async (current) => {
       const rankings = await rankingPromise;
 
-      return buildBattleEmbed({
+      const embed = buildBattleEmbed({
         battle,
         battleDetails,
         rankings,
@@ -51,6 +51,10 @@ export default async function getBattleData({ id , context }) {
         file,
         data
       });
+
+      embed.embed.setURL(current.embed.data.url);
+      embed.embed.setDescription(current.embed.data.description)
+      return embed
     }
   };
 }
