@@ -1,7 +1,5 @@
-import formatNumber from "#utils/formatNumber.js";
 import { getSubscribedMu } from "./getSubscribedMus.js";
 import { getAllRankings } from "./getBattleRankings.js";
-import { renameDamageMap } from "./getMemberDamage.js";
 import { buildPromises, getBattleParticipants } from "./getBattleParticipants.js";
 import { getBattleMap } from "./getBattleMap.js";
 import { buildBattleEmbed } from "./buildBattleEmbed.js";
@@ -13,20 +11,13 @@ export default async function getBattleData({ id , context }) {
 
   const promises = buildPromises(muId, battleId);
 
-  const [battle, battleDetails, mu, muDamageMap] = await Promise.all(promises);
+  const [battle, battleDetails, mu, muDamage] = await Promise.all(promises);
 
-  const muDamage = muDamageMap?.get(muId)
-    ? {
-        name: mu.name,
-        damage: formatNumber(muDamageMap.get(muId))
-      }
-    : null;
-
-  const rankingPromise = muId && muDamageMap.size
+  const rankingPromise = muId && muDamage
     ? getAllRankings(mu.members, {
         battleId,
         type: 'user',
-        maxDamage: muDamageMap.get(muId)
+        maxDamage: muDamage[muId].damage
       })
     : null;
 
@@ -38,7 +29,7 @@ export default async function getBattleData({ id , context }) {
   const initial = buildBattleEmbed({
     battle,
     battleDetails,
-    membersDamage: undefined,
+    rankings: undefined,
     muDamage,
     file,
     data
@@ -51,12 +42,11 @@ export default async function getBattleData({ id , context }) {
     ...initial,
     update: async () => {
       const rankings = await rankingPromise;
-      const membersDamage = await renameDamageMap(rankings);
 
       return buildBattleEmbed({
         battle,
         battleDetails,
-        membersDamage,
+        rankings,
         muDamage,
         file,
         data

@@ -1,4 +1,5 @@
 import { createAPIClient } from "@wareraprojects/api";
+import { fetchName } from "./api.js";
 
 const client = createAPIClient();
 
@@ -12,7 +13,7 @@ export async function getAllRankings(toSearch, rankingData){
   let cursor;
   let damageCounter = 0;
 
-  let matching = new Map();
+  let matching = {};
 
   while(true) {
     const response = await client.battleRanking.getRanking({ 'battleId': rankingData.battleId, 'type': rankingData.type, 'side': 'merged', 'dataType': 'damage', 'cursor': cursor });
@@ -23,7 +24,10 @@ export async function getAllRankings(toSearch, rankingData){
         return matching;
       const id = item.mu ?? item.user;
       if(toSearchIds.has(id)){
-        matching.set(id, item.value);
+        matching[id] = {};
+        matching[id].name = await fetchName(id, rankingData.type);
+        matching[id].damage = item.value;
+        matching[id].rank = item.rank;
         damageCounter += item.value;
       }
     }

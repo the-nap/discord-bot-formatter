@@ -1,10 +1,11 @@
 import formatNumber from "#utils/formatNumber.js";
+import { sorter, valueFormatter } from "#utils/formatter.js";
 import { EmbedBuilder } from "discord.js";
 
 export function buildBattleEmbed({
   battle,
   battleDetails,
-  membersDamage,
+  rankings,
   muDamage,
   file,
   data,
@@ -36,22 +37,45 @@ export function buildBattleEmbed({
     { name: '', value: round },
   ]
 
+  const muData = Object.values(muDamage)[0];
+
   if(muDamage)
-    fields.push({ name:`----Danni----`, value: `${muDamage.name} ${muDamage.damage}` })
+    fields.push({ 
+      name: ``,
+      value: `${muData.name}`,
+      inline: true
+    },
+    {
+      name: `Danni`,
+      value: `${formatNumber(muData.damage)}`,
+      inline: true
+    },
+    {
+      name: 'Rank',
+      value: `${muData.rank}`,
+      inline: true
+    },
+    { name: '\u200b', value: '\u200b', inline: false},
+    )
 
-  const membersDamageData = membersDamage
-  ? [...membersDamage.entries()]
-    .sort((a,b) => {
-      return b[1] - a[1]
+  if(rankings){
+    const sortedMembers = Object.values(rankings).sort(sorter('damage'));
+    fields.push({
+      name: 'Player',
+      value: valueFormatter(sortedMembers, m => m.name),
+      inline: true
+    },
+    {
+      name: 'Danni',
+      value: valueFormatter(sortedMembers, m => formatNumber(m.damage)),
+      inline: true
+    },
+    {
+      name: 'Rank',
+      value: valueFormatter(sortedMembers, m => m.rank),
+      inline: true
     })
-    .map((user) => {
-      return `${user[0]} - ${formatNumber(user[1])}`
-    })
-    .join('\n')
-  : null
-
-  if(membersDamageData)
-    fields.push({ name:'', value: membersDamageData })
+  }
 
   const embed = new EmbedBuilder()
   .setTitle(title)
