@@ -1,5 +1,3 @@
-import formatNumber from "#utils/formatNumber.js";
-
 export function calculateTodayDamage(current, previous) {
   return current >= previous
     ? current - previous
@@ -21,7 +19,13 @@ export function getVariation(oldValue, newValue) {
   return `🔴 ${percentage}%`;
 }
 
-export function formatDamage(today, variation) {
-  const result = `${formatNumber(today)} ${variation}`;
-  return result;
+export function getRankVariation(oldValue, newValue) {
+  if(!oldValue) return '';
+  const diff = newValue - oldValue;
+
+  if (diff < 0) return `▲${-diff}`;
+  if (diff > 0) return `▼${diff}`;
+  return `➖`;
+
 }
+

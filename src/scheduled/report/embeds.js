@@ -18,7 +18,14 @@ export function buildEmbed(mu, muReport, membersReport){
         value: valueFormatter([muReport], m => m.variation),
         inline: true
       },
+      {
+        name: 'Rank',
+        value: `${muReport.rank}  (${muReport.rankVariation})`,
+        inline: true
+      },
+
       { name: '\u200b', value: '\u200b', inline: false},
+
       {
         name: 'Player',
         value: valueFormatter(membersReport, m => m.name),

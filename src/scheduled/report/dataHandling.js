@@ -1,10 +1,11 @@
-import { calculateTodayDamage, getVariation } from "./calculations.js";
+import { calculateTodayDamage, getVariation, getRankVariation } from "./calculations.js";
 
 export function initializeMu(data, mu, members){
 
   data[mu._id] = {};
   data[mu._id].weeklyDamage = mu.rankings?.muWeeklyDamages?.value ?? 0,
   data[mu._id].yesterdayDamage = 0;
+  data[mu._id].yesterdayRank = mu.rankings?.muWeeklyDamages?.rank;
 
   members.forEach( member => {
     data[mu._id][member._id] = {};
@@ -27,14 +28,19 @@ export function processMu(muData, mu, update){
   const today = calculateTodayDamage(weekly, muData.weeklyDamage);
   const variation = getVariation(muData.yesterdayDamage, today);
 
+  const rank = mu.rankings?.muWeeklyDamages?.rank;
+  const rankVariation = getRankVariation(muData.yesterdayRank, rank);
+
   if(update){
-    updateData(muData, weekly, today);
+    updateData(muData, weekly, today, rank);
   }
 
   return {
     name: mu.name,
     today: today,
     variation: variation,
+    rank: rank,
+    rankVariation: rankVariation
   }
 }
 
@@ -57,31 +63,30 @@ export function processMember(member, muData, update){
 
   return {
     name: member.username,
-    value: {
-      today: today,
-      variation: variation
-    }
+    today: today,
+    variation: variation
   }
 }
 
 export function removeOldMembers(muData, members){
   const currentMembers = new Set(members.map(member => member._id));
-  const reserved = new Set(['weeklyDamage', 'yesterdayDamage']);
+  const reserved = new Set(['weeklyDamage', 'yesterdayDamage', 'yesterdayRank']);
 
   Object.keys(muData)
     .filter(userId => !reserved.has(userId) && !currentMembers.has(userId))
     .forEach(user => delete muData[user]);
 }
 
-function updateData(data, weekly, daily){
+function updateData(data, weekly, daily, rank){
     data.weeklyDamage = weekly;
     data.yesterdayDamage = daily;
+    data.yesterdayRank = rank;
 }
 
 export const sorter = ((a,b) => {
   if(a === b) return 0;
-  if(!a.value) return 1;
-  if(!b.value) return -1;
-  return b.value.today - a.value.today;
+  if(!a.today) return 1;
+  if(!b.today) return -1;
+  return b.today - a.today;
 })
 
