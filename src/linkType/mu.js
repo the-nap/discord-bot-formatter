@@ -1,9 +1,8 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder } from "discord.js";
 import formatNumber from "#utils/formatNumber.js";
-import { isInWar } from "#utils/skillset.js";
 import { sorter, valueFormatter } from "#utils/formatter.js";
-import { createUserObject } from "./user/util.js";
+import { createUserObject } from "#utils/formatter.js";
 
 export default async function getMuData({ id }){
   const client = createAPIClient();
