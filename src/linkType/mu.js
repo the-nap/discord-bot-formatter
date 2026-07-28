@@ -2,6 +2,8 @@ import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder } from "discord.js";
 import formatNumber from "#utils/formatNumber.js";
 import { isInWar } from "#utils/skillset.js";
+import { sorter, valueFormatter } from "#utils/formatter.js";
+import { createUserObject } from "./user/util.js";
 
 export default async function getMuData({ id }){
   const client = createAPIClient();
@@ -14,22 +16,15 @@ export default async function getMuData({ id }){
     })
   );
 
-  muMembers = muMembers.filter( user =>
-    user.isActive && user.rankings.weeklyUserDamages
-  );
+  muMembers = muMembers.filter( user => user.isActive );
 
   const inWar = 
     muMembers.filter( user => isInWar(user.skills) ).length;
 
-  const membersDamage = 
-    [...muMembers].sort((a,b) => {
+  const users =  muMembers
+    .map( user => createUserObject(user) )
+    .sort(sorter('damage'));
 
-      return b.rankings.weeklyUserDamages.value - a.rankings.weeklyUserDamages.value;
-    })
-    .map((user) => {
-      return `${user.username} - ${formatNumber(user.rankings.weeklyUserDamages.value)}`
-    })
-    .join('\n');
 
   const fields = [
     {
@@ -40,9 +35,20 @@ export default async function getMuData({ id }){
         Danno medio per war player: ${ formatNumber(mu.rankings.muWeeklyDamages.value / inWar) }
       `
     },
-    { 
-      name: 'Classifica',
-      value: `${membersDamage}`
+    {
+      name: '👤 Player',
+      value: valueFormatter(users, user => user.name),
+      inline: true
+    },
+    {
+      name: '💥 Danni',
+      value: valueFormatter(users, user => formatNumber(user.damage)),
+      inline: true
+    },
+    {
+      name: '🧬 Skillset',
+      value: valueFormatter(users, user => user.skills),
+      inline: true
     }
   ]
 
