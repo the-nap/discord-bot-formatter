@@ -1,7 +1,7 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder, AttachmentBuilder } from "discord.js";
 import { getEquipFormatted } from "#utils/equipMaker.js";
-import { isInWar } from "#utils/skillset.js";
+import { getSkillset } from "#utils/skillset.js";
 
 export default async function getUserData({ id }){
   const client = createAPIClient();
@@ -42,11 +42,7 @@ export default async function getUserData({ id }){
       return "💡 Lavoro aut. **PIENA!**";
     return `💡 Lavoro aut. ${current} / ${total}`;
   }
-  const skillSet = () => {
-    if(isInWar(user.skills))
-      return '⚔️ War';
-    return '💰 Eco';
-  }
+  const skillset = getSkillset(user);
 
   const image = await getEquipFormatted(equipment);
   const file = new AttachmentBuilder(image, { name: "equip.png" });
@@ -61,7 +57,7 @@ export default async function getUserData({ id }){
        ${hungerField()}\n
        ${energyField()}\n
        ${enterField()}\n
-       ${skillSet()}` },
+       ${skillset}` },
   )
   .setImage('attachment://equip.png');
 
