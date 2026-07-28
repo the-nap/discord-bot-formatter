@@ -7,3 +7,4 @@ tests/testData/
 tests/mockData/
 tests/*.js
 src/state
+coverage/

@@ -37,9 +37,9 @@ export function buildBattleEmbed({
     { name: '', value: round },
   ]
 
-  const muData = Object.values(muDamage)[0];
 
-  if(muDamage)
+  if(muDamage){
+    const muData = Object.values(muDamage)[0];
     fields.push({ 
       name: ``,
       value: `${muData.name}`,
@@ -57,6 +57,7 @@ export function buildBattleEmbed({
     },
     { name: '\u200b', value: '\u200b', inline: false},
     )
+  }
 
   if(rankings){
     const sortedMembers = Object.values(rankings).sort(sorter('damage'));
