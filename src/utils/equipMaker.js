@@ -35,7 +35,6 @@ export async function getEquipFormatted(equipment) {
 
   const data = await Promise.all(
     parsedEquipment.map(async parsed => {
-      console.log(parsed);
       return {
       tier: parsed?.tier,
       image: parsed

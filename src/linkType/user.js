@@ -47,17 +47,17 @@ export default async function getUserData({ id }){
   const image = await getEquipFormatted(equipment);
   const file = new AttachmentBuilder(image, { name: "equip.png" });
 
-
   const embed = new EmbedBuilder()
   .setTitle(user.username)
   .setThumbnail(user.avatarUrl)
   .addFields(
-    { name: 'Barre', value:
-      `${healthField()}\n
-       ${hungerField()}\n
-       ${energyField()}\n
-       ${enterField()}\n
-       ${skillset}` },
+    { name: 'Barre', value: [
+      `${healthField()}`,
+      `${hungerField()}`,
+      `${energyField()}`,
+      `${enterField()}`,
+      `${skillset}`
+    ].join(`\n\n`)},
   )
   .setImage('attachment://equip.png');
 
