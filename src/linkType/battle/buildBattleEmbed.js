@@ -38,7 +38,7 @@ export function buildBattleEmbed({
   ]
 
 
-  if(muDamage){
+  if(muDamage && Object.keys(muDamage).length){
     const muData = Object.values(muDamage)[0];
     fields.push({ 
       name: ``,

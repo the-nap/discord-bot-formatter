@@ -31,8 +31,7 @@ export async function getAllRankings(toSearch, rankingData){
         damageCounter += item.value;
       }
     }
-
-    if(matching.size === toSearchIds.size)
+    if(Object.keys(matching).length === toSearchIds.size)
       return matching;
 
     if(!response.nextCursor) {

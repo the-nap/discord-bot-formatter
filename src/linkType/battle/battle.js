@@ -13,7 +13,7 @@ export default async function getBattleData({ id , context }) {
 
   const [battle, battleDetails, mu, muDamage] = await Promise.all(promises);
 
-  const rankingPromise = muId && muDamage
+  const rankingPromise = muId && muDamage?.[muId]
     ? getAllRankings(mu.members, {
         battleId,
         type: 'user',
