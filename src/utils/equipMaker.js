@@ -34,13 +34,15 @@ export async function getEquipFormatted(equipment) {
   const parsedEquipment = slots.map((item) => parseEquipment(item));
 
   const data = await Promise.all(
-    parsedEquipment.map(async parsed => ({
+    parsedEquipment.map(async parsed => {
+      console.log(parsed);
+      return {
       tier: parsed?.tier,
       image: parsed
-        ? await Canvas.loadImage(`https://app.warera.io/images/items/${parsed.name}.png`)
+        ? await Canvas.loadImage(`https://media.warera.io/images/items/${parsed.name}.png`)
         : await Canvas.loadImage(pathToFileURL(emptyPath))
+    }
     }))
-  );
 
 
   for( let i = 0; i < data.length; i++ ){
