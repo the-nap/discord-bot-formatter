@@ -9,8 +9,12 @@ export function createUserObject(user){
 }
 
 export function valueFormatter(list, getter){
+  if(list.length === 1)
+    return list.map(getter).join('\n');
+
   return list
-    .map(getter)
+    .map((item,index) =>
+      `${String(index+1)}) **${getter(item)}**`)
     .join(`\n`);
 }
 

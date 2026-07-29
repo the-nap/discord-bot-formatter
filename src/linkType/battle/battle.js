@@ -53,7 +53,7 @@ export default async function getBattleData({ id , context }) {
       });
 
       embed.embed.setURL(current.embed.data.url);
-      embed.embed.setDescription(current.embed.data.description)
+      embed.embed.setDescription(current.embed.data.description ?? null)
       return embed
     }
   };
