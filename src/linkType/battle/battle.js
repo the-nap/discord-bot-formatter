@@ -26,14 +26,15 @@ export default async function getBattleData({ id , context }) {
     getBattleMap(battle)
   ]);
 
-  const initial = buildBattleEmbed({
+  const battleContext = {
     battle,
     battleDetails,
-    rankings: undefined,
     muDamage,
     file,
-    data
-  });
+    data 
+  }
+
+  const initial = buildBattleEmbed(battleContext);
 
   if (!rankingPromise)
     return initial;
@@ -41,20 +42,13 @@ export default async function getBattleData({ id , context }) {
   return {
     ...initial,
     update: async (current) => {
-      const rankings = await rankingPromise;
+      battleContext.rankings = await rankingPromise;
 
-      const embed = buildBattleEmbed({
-        battle,
-        battleDetails,
-        rankings,
-        muDamage,
-        file,
-        data
-      });
+      const updated = buildBattleEmbed(battleContext);
 
-      embed.embed.setURL(current.embed.data.url);
-      embed.embed.setDescription(current.embed.data.description ?? null)
-      return embed
+      updated.embed.setURL(current.embed.data.url);
+      updated.embed.setDescription(current.embed.data.description ?? null)
+      return updated;
     }
   };
 }
