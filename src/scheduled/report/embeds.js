@@ -1,6 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import formatNumber from "#utils/formatNumber.js";
-import { valueFormatter } from "#utils/formatter.js";
+import { valueFormatter, formatNumber } from "#utils/formatter.js";
 
 export function buildEmbed(mu, muReport, membersReport){
 

@@ -9,24 +9,24 @@ export function createUserObject(user){
 }
 
 export function pcFormatter(data, columns){
-  return columns.map({
-    name: columns.title,
-    value: valueFormatter(data, columns.getter),
+  return columns.map(column => ({
+    name: column.name,
+    value: valueFormatter(data, column.getter),
     inline: true
-  })
+  }))
 }
 
 export function mobileFormatter(data, columns){ 
   return data.map(item => ({
     name: columns[0].getter(item),
-    value: mobileValueFormatter(columns)
+    value: mobileValueFormatter(columns, item)
   }))
 }
 
-function mobileValueFormatter(columns){
+function mobileValueFormatter(columns, item){
   return columns
     .slice(1)
-    .map(column => `*${column.name}** ${col.getter(item)}`)
+    .map(column => `${column.name} **${column.getter(item)}**`)
     .join(`\n`)
 }
 
@@ -47,3 +47,17 @@ export const sorter = (field) => (a, b) => {
   if(!b[field]) return -1;
   return b[field] - a[field];
 };
+
+export function formatNumber(num) {
+  const abs = Math.abs(num);
+
+  if (abs >= 999_999) {
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  }
+
+  if (abs >= 1_000) {
+    return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
+  }
+
+  return num.toLocaleString();
+}
