@@ -8,6 +8,28 @@ export function createUserObject(user){
   }
 }
 
+export function pcFormatter(data, columns){
+  return columns.map({
+    name: columns.title,
+    value: valueFormatter(data, columns.getter),
+    inline: true
+  })
+}
+
+export function mobileFormatter(data, columns){ 
+  return data.map(item => ({
+    name: columns[0].getter(item),
+    value: mobileValueFormatter(columns)
+  }))
+}
+
+function mobileValueFormatter(columns){
+  return columns
+    .slice(1)
+    .map(column => `*${column.name}** ${col.getter(item)}`)
+    .join(`\n`)
+}
+
 export function valueFormatter(list, getter){
   if(list.length === 1)
     return list.map(getter).join('\n');
@@ -17,6 +39,7 @@ export function valueFormatter(list, getter){
       `${String(index+1)}) **${getter(item)}**`)
     .join(`\n`);
 }
+
 
 export const sorter = (field) => (a, b) => {
   if(a === b) return 0;
