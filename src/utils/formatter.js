@@ -17,10 +17,12 @@ export function pcFormatter(data, columns){
 }
 
 export function mobileFormatter(data, columns){ 
-  return data.map(item => ({
-    name: columns[0].getter(item),
-    value: mobileValueFormatter(columns, item)
-  }))
+  return [{
+    name: 'Classifica',
+    value: data.map(item => 
+      `${columns[0].getter(item)} ${mobileValueFormatter(columns, item)}`)
+      .join(`\n`)
+  }]
 }
 
 function mobileValueFormatter(columns, item){
