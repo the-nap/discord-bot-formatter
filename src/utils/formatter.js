@@ -25,7 +25,7 @@ export function mobileFormatter(data, columns){
   let current = '';
 
   for (const line of lines){
-    if (current.length + line.length + (current ? 1 : 0) > 1024) {
+    if (current.length + line.length + (current ? 1 : 0) > 900) {
       fields.push({
         name: fields.length === 0 ? 'Classifica' : '',
         value: current,

@@ -15,7 +15,9 @@ export default {
 
     if(!data)
       return;
-    await interaction.deferReply();
+    await interaction.deferReply({
+      flags: MessageFlags.Ephemeral
+    });
 
     const newView = currentView === 'desktop' ? 'mobile' : 'desktop';
 
@@ -30,7 +32,6 @@ export default {
 
     await interaction.editReply({
       embeds: [embed],
-      flags: MessageFlags.Ephemeral
     })
   },
 }
