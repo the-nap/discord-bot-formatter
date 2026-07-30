@@ -48,7 +48,6 @@ function toggleViewButton(view = 'desktop'){
 
 export function withToggleViewButton( messageId, result){
   viewData.set(messageId, result.formattable);
-  console.log(viewData);
   return {
     embeds: [result.embed],
     files: result.file ? [result.file] : [],

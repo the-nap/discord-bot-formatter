@@ -51,7 +51,7 @@ export function buildMuBattleData({ muDamage }){
     { name: '\u200b', value: '\u200b', inline: false },
     ]
   }
-  return null;
+  return [];
 }
 
 export function buildMembersBattleData({ rankings }){
