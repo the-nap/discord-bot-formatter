@@ -17,18 +17,42 @@ export function pcFormatter(data, columns){
 }
 
 export function mobileFormatter(data, columns){ 
-  return [{
-    name: 'Classifica',
-    value: data.map(item => 
-      `${columns[0].getter(item)} ${mobileValueFormatter(columns, item)}`)
-      .join(`\n`)
-  }]
+  const lines = data.map(item =>
+    `**${columns[0].getter(item)}**\n ${mobileValueFormatter(columns, item)}`
+  );
+
+  const fields = [];
+  let current = '';
+
+  for (const line of lines){
+    if (current.length + line.length + (current ? 1 : 0) > 1024) {
+      fields.push({
+        name: fields.length === 0 ? 'Classifica' : '',
+        value: current,
+      });
+      current = line;
+    } else {
+      current += (current ? '\n\n' : '') + line;
+      }
+    }
+  if (current) {
+    fields.push({
+      name: fields.length === 0 ? 'Classifica' : '',
+      value: current,
+    });
+  }
+  return fields;
 }
 
 function mobileValueFormatter(columns, item){
   return columns
     .slice(1)
-    .map(column => `${column.name} **${column.getter(item)}**`)
+    .map(column => {
+      const value = column.getter(item);
+      return value === ''
+      ? column.name
+      : `${column.name}: **${value}**`
+    })
     .join(`\n`)
 }
 
@@ -37,8 +61,13 @@ export function valueFormatter(list, getter){
     return list.map(getter).join('\n');
 
   return list
-    .map((item,index) =>
-      `${String(index+1)}) **${getter(item)}**`)
+    .map((item,index) => {
+      const value = getter(item);
+      return value === ''
+        ? `${String(index+1)})`
+        : `${String(index+1)}) **${getter(item)}**`
+    })
+
     .join(`\n`);
 }
 
