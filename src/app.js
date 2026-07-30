@@ -8,16 +8,6 @@ import { startScheduler } from '#utils/scheduled.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const timestamp = new Intl.DateTimeFormat("en-GB", {
-  timeZone: "Europe/Rome",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false,
-}).format(new Date());
 
 console.log("Running in:", config.environment);
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -44,27 +34,38 @@ await loadButtons();
 
 client.on(Events.InteractionCreate, async (interaction) => {
   const startTime = performance.now();
+  const timestamp = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Rome",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(new Date());
+
+  const name = interaction.customId ?? interaction.commandName;
+  console.log(
+    `[${timestamp}] ${interaction.user.username} called /${name} on channel ${interaction.channel.name}`,
+      interaction.options?.data?.length 
+        ? interaction.options.data
+        : ''
+  );
   try {
     if( interaction.isButton() ){
-      const [buttonName] = interaction.customId.split(':');
-      const button = interaction.client.buttons.get(buttonName);
+      const button = interaction.client.buttons.get(name);
       if( !button ){
-        console.error(`No button matching ${buttonName} found`);
+        console.error(`No button matching ${name} found`);
         return;
       }
 
       await button.execute(interaction);
     }
     if( interaction.isChatInputCommand() ){
-      const command =  interaction.client.commands.get(interaction.commandName);
-      console.log(
-        `[${timestamp}] ${interaction.user.username} called /${interaction.commandName}`,
-        interaction.options.data.length != 0
-          ? interaction.options.data
-          : ''
-      );
+      const command =  interaction.client.commands.get(name);
       if(!command) {
-        console.error(`No command matching ${interaction.commandName} was found.`);
+        console.error(`No command matching ${name} was found.`);
         return;
       }
 

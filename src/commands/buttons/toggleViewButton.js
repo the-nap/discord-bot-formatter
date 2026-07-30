@@ -1,4 +1,4 @@
-import { pcFormatter, mobileFormatter } from "#utils/formatter.js";
+import { mobileFormatter } from "#utils/formatter.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, EmbedBuilder } from "discord.js";
 
 const viewData = new Map();
@@ -9,8 +9,6 @@ export default {
 
   async execute(interaction){
 
-    const [_, currentView] = interaction.customId.split(':');
-
     const data = viewData.get(interaction.message.id);
 
     if(!data)
@@ -19,11 +17,7 @@ export default {
       flags: MessageFlags.Ephemeral
     });
 
-    const newView = currentView === 'desktop' ? 'mobile' : 'desktop';
-
-    const fields = newView === 'desktop'
-      ? pcFormatter(data.data, data.columns)
-      : mobileFormatter(data.data, data.columns)
+    const fields = mobileFormatter(data.data, data.columns);
 
     const embed = EmbedBuilder.from(interaction.message.embeds[0]);
     const oldFields = embed.data.fields.slice(0, embed.data.fields.length - 4)
@@ -38,7 +32,7 @@ export default {
 
 function toggleViewButton(view = 'desktop'){ 
   return new ButtonBuilder()
-    .setCustomId(`toggleView:${view}`)
+    .setCustomId(`toggleView`)
     .setLabel(
       view === 'desktop'
         ? 'Mostra per mobile'

@@ -10,8 +10,10 @@ export async function autoReport(discordClient){
   for( let subscription of subscriptions ){
 
     const channel = discordClient.channels.cache.get(subscription.channel)
-    if(!channel)
+    if(!channel){
       console.warn(`Il canale ${subscription.channel} non risulta`);
+      continue;
+    }
 
     try{
       if(!reports.has(subscription.mu))
@@ -27,11 +29,17 @@ export async function autoReport(discordClient){
         withToggleViewButton(message.id, result)
       )
   
-    }catch (err){
+    } catch (err) {
       console.error(err);
-      channel.send({
-        content: 'Qualcosa è andato storto'
-      })
+      console.error(`Error on channel: ${channel.name}`);
+
+      try {
+        await channel.send({
+          content: 'Qualcosa è andato storto'
+        });
+      } catch (sendError) {
+        console.error('Could not send error message:', sendError);
+      }
     }
   }
 }
