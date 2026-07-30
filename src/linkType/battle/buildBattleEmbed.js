@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { buildMembersBattleData, buildMuBattleData, buildRoundCount, buildScore, buildTitle } from "./builders.js";
+import { pcFormatter } from "#utils/formatter.js";
 
 export function buildBattleEmbed(context){
 
@@ -13,14 +14,17 @@ export function buildBattleEmbed(context){
     ...buildMuBattleData(context),
   )
 
+  if(context.rankings){
+    const lastField = buildMembersBattleData(context);
+    result['formattable'] = lastField;
+    result.embed.addFields(pcFormatter(lastField.data, lastField.columns));
+  }
+
   const { file } = context;
 
   if(file){
     result['embed'].setImage("attachment://region.png");
     result['file'] = file;
-  }
-  if(context.rankings){
-    result['formattable'] = buildMembersBattleData(context);
   }
 
   return result;

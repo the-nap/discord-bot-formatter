@@ -1,6 +1,6 @@
 import { createAPIClient } from "@wareraprojects/api";
 import { EmbedBuilder } from "discord.js";
-import { formatNumber, sorter, valueFormatter } from "#utils/formatter.js";
+import { formatNumber, pcFormatter, sorter, valueFormatter } from "#utils/formatter.js";
 import { createUserObject } from "#utils/formatter.js";
 
 export default async function getMuData({ id }){
@@ -24,6 +24,21 @@ export default async function getMuData({ id }){
   const inEco = users.filter( user => user.skills.endsWith("Eco"));
   const hybrid = users.filter( user => user.skills.endsWith("Ibrido"));
 
+  const columns = [
+    {
+      name: '👤 Player',
+      getter: user => user.name,
+    },
+    {
+      name: '💥 Danni',
+      getter: user => formatNumber(user.damage),
+    },
+    {
+      name: '🧬 Skillset',
+      getter: user => user.skills,
+    }
+  ]
+
   const fields = [
     {
       name: '',
@@ -32,21 +47,7 @@ export default async function getMuData({ id }){
         `Players war / eco / ibridi: ${ inWar.length } / ${ inEco.length } / ${ hybrid.length }`
       ].join("\n")
     },
-    {
-      name: '👤 Player',
-      value: valueFormatter(users, user => user.name),
-      inline: true
-    },
-    {
-      name: '💥 Danni',
-      value: valueFormatter(users, user => formatNumber(user.damage)),
-      inline: true
-    },
-    {
-      name: '🧬 Skillset',
-      value: valueFormatter(users, user => user.skills),
-      inline: true
-    }
+    ...pcFormatter(users,columns)
   ]
 
   const embed = new EmbedBuilder()
@@ -54,6 +55,6 @@ export default async function getMuData({ id }){
   .setThumbnail(mu.avatarUrl)
   .addFields(fields)
 
-  return {embed};
+  return { embed: embed, formattable: {data: users, columns: columns} }
 
 }

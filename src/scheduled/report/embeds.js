@@ -1,47 +1,47 @@
 import { EmbedBuilder } from "discord.js";
-import { valueFormatter, formatNumber } from "#utils/formatter.js";
+import { formatNumber, pcFormatter } from "#utils/formatter.js";
 
 export function buildEmbed(mu, muReport, membersReport){
 
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setTitle(muReport.name)
     .setURL(`https://app.warera.io/mu/${mu._id}`)
     .setThumbnail(mu.avatarUrl)
-    .addFields(
+    .addFields(pcFormatter([muReport], [
       { 
         name: '💥 Danni',
-        value: valueFormatter([muReport], m => formatNumber(m.today)),
-        inline: true
+        getter: m => formatNumber(m.today),
       },
       {
         name: '📊 Variazione',
-        value: valueFormatter([muReport], m => m.variation),
-        inline: true
+        getter: m => m.variation
       },
       {
         name: '🏆 Rank',
-        value: `${muReport.rank}  (${muReport.rankVariation})`,
-        inline: true
-      },
-
-      { name: '\u200b', value: '\u200b', inline: false},
-
-      {
-        name: '👤 Player',
-        value: valueFormatter(membersReport, m => m.name),
-        inline: true
-      },
-      {
-        name: '💥 Danni',
-        value: valueFormatter(membersReport, m => formatNumber(m.today)),
-        inline: true
-      },
-      {
-        name: '📊 Variazione',
-        value: valueFormatter(membersReport, m => m.variation),
-        inline: true
+        getter: m => `${m.rank}  (${m.rankVariation})`,
       }
-    )
+    ]),
+      { name: '\u200b', value: '\u200b', inline: false})
+
+  const columns = [
+    {
+      name: '👤 Player',
+      getter: m => m.name
+    },
+    {
+      name: '💥 Danni',
+      getter: m => formatNumber(m.today),
+    },
+    {
+      name: '📊 Variazione',
+      getter: m => m.variation,
+    }
+  ]
+
+  embed.addFields(pcFormatter(membersReport, columns));
+
+  const formattable = { data: membersReport, columns: columns }
+  return { embed: embed, formattable: formattable };
 }
 
 export function buildMissingEmbed(mu){
