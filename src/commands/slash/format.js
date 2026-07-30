@@ -5,6 +5,7 @@ import getMuData from '#linkType/mu.js';
 import getUserData from '#linkType/user.js';
 import getBattleData from '#linkType/battle/battle.js';
 import getRegionData from '#linkType/region.js';
+import { withToggleViewButton } from '../buttons/toggleViewButton.js';
 
 export default {
   cooldown: 3,
@@ -16,17 +17,24 @@ export default {
   async execute(interaction) {
     await interaction.deferReply();
     const result = await formatLink(interaction);
+    const message = await interaction.fetchReply();
 
-    await interaction.editReply({
+    let reply = {
       embeds: [result.embed],
       files: result.file ? [result.file] : []
-    });
+    }
+
+    if(result.formattable)
+      reply = withToggleViewButton(message.id, result)
+
+    await interaction.editReply(reply)
 
     if(result.update){
-      const updatedEmbed = await result.update(result);
-      await interaction.editReply({
-        embeds: [updatedEmbed.embed],
-      });
+      const updated = await result.update(result);
+
+      await interaction.editReply(
+        withToggleViewButton(message.id, updated)
+      );
     }
   }
 };

@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
 import { commandReport } from "../../scheduled/dailyReport.js";
 import { getSubscriptions } from "#utils/subscriptionsHandler.js";
+import { withToggleViewButton } from "../buttons/toggleViewButton.js";
 
 export default {
   cooldown: 3,
@@ -12,10 +13,11 @@ export default {
     await interaction.deferReply();
 
     const result = await getReport(interaction);
+    const message = await interaction.fetchReply();
 
-    interaction.editReply({
-      embeds: [result]
-    });
+    interaction.editReply(
+      withToggleViewButton(message.id, result)
+    )
   }
 }
 
