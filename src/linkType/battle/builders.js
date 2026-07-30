@@ -1,4 +1,4 @@
-import { formatNumber, mobileFormatter, sorter } from '#utils/formatter.js';
+import { formatNumber, mobileFormatter, pcFormatter, sorter } from '#utils/formatter.js';
 
 export function buildScore({ data, battle }){
 
@@ -55,7 +55,6 @@ export function buildMuBattleData({ muDamage }){
 }
 
 export function buildMembersBattleData({ rankings }){
-  console.log(rankings);
   if(rankings){
     const sortedMembers = Object.values(rankings).sort(sorter('damage'));
     const columns = [
@@ -72,9 +71,9 @@ export function buildMembersBattleData({ rankings }){
         getter: m => m.rank
       }
     ]
-    return mobileFormatter(sortedMembers, columns);
+    return { data: sortedMembers, columns: columns };
   }
-  return [];
+  return {};
 }
 
 function toField(name, value, inline = false){

@@ -2,21 +2,27 @@ import { EmbedBuilder } from "discord.js";
 import { buildMembersBattleData, buildMuBattleData, buildRoundCount, buildScore, buildTitle } from "./builders.js";
 
 export function buildBattleEmbed(context){
-  const { file } = context;
 
-  const embed = new EmbedBuilder()
+  const result = {};
+
+  result['embed'] = new EmbedBuilder()
   .setTitle(buildTitle(context))
   .addFields(
     buildScore(context),
     buildRoundCount(context),
     ...buildMuBattleData(context),
-    ...buildMembersBattleData(context) 
   )
 
+  const { file } = context;
+
   if(file){
-    embed.setImage("attachment://region.png");
-    return {embed, file};
+    result['embed'].setImage("attachment://region.png");
+    result['file'] = file;
+  }
+  if(context.rankings){
+    result['formattable'] = buildMembersBattleData(context);
   }
 
-  return {embed};
+  return result;
+
 }

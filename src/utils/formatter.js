@@ -42,7 +42,6 @@ export function valueFormatter(list, getter){
     .join(`\n`);
 }
 
-
 export const sorter = (field) => (a, b) => {
   if(a === b) return 0;
   if(!a[field]) return 1;
