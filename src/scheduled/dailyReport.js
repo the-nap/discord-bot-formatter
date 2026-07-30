@@ -1,4 +1,5 @@
 import { getSubscriptions } from '#utils/subscriptionsHandler.js';
+import { withToggleViewButton } from '../commands/buttons/toggleViewButton.js';
 import { generateReport } from './report/generateReport.js';
 
 export async function autoReport(discordClient){
@@ -15,10 +16,16 @@ export async function autoReport(discordClient){
     try{
       if(!reports.has(subscription.mu))
         reports.set(subscription.mu, await generateReport(subscription.mu, true))
+
+      const result = reports.get(subscription.mu);
   
-      await channel.send({
-        embeds: [ reports.get(subscription.mu) ]
+      const message = await channel.send({
+        embeds: [ result.embed ]
       })
+
+      await message.edit(
+        withToggleViewButton(message.id, result)
+      )
   
     }catch (err){
       console.error(err);
